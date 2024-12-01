@@ -288,6 +288,13 @@ if __name__ == '__main__':
             text_x = node[0] - text_surface.get_width() / 2
             text_y = node[1] - text_surface.get_height() / 2
             screen.blit(text_surface, (text_x, text_y))
+        
+        average_idleness = calculate_average_idleness(last_visited_shared)
+
+        # Afficher l'oisiveté moyenne
+        idle_text = f"Oisiveté moyenne : {average_idleness:.2f}"
+        idle_surface = font.render(idle_text, True, (0, 0, 0))  # Texte en noir
+        screen.blit(idle_surface, (10, 10))  # Affiche le texte en haut à gauche
 
         # Récupérer et dessiner chaque agent
         for i in range(num_agents):
