@@ -1,6 +1,3 @@
-# L'algo récatif doit régler le probleme que quand un agent va d'un noeud a un autre un autre ne peux pas le suivre sinon
-# ils se suivent rapidement psk le next node a pas encore était actualisé l'idleness
-# TODO a faire j'ai rien fait
 
 import pygame
 import random
@@ -30,8 +27,8 @@ for a, b in edges:
     adjacency_list[a].append(b)
     adjacency_list[b].append(a)
 
-# Dictionnaire pour stocker le temps de la dernière visite de chaque nœud
-last_visited = {i: None for i in range(len(nodes_position))}  # Aucun nœud visité au départ
+
+
 
 
 # Fonction de déplacement de l'agent avec chemin donné
@@ -57,7 +54,7 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
             voisins = adjacency_list[agent_node_index]
             random.shuffle(voisins)
             next_node_index = min(voisins, key=lambda x: last_visited_shared[x] if last_visited_shared[x] is not None else -float('inf'))
-            
+
             with lock:
                 if next_node_index in shared_list_next_node:
                     # Choisir un autre chemin
@@ -127,9 +124,17 @@ if __name__ == '__main__':
 
     running = True
     agent_positions = [initial_node] * num_agents  # Position initiale de chaque agent
-
+    start_time = time.time()
+    total_idleness = 0
+    total_seconds = 0  # Compter le nombre de secondes écoulées
     while running:
-
+        elapsed_time = time.time() - start_time
+        if elapsed_time >= 60:
+            running = False
+        # Calculer l'oisiveté moyenne pendant la simulation
+        current_idleness = calculate_average_idleness(last_visited_shared)
+        total_idleness += current_idleness  # Ajouter l'oisiveté du moment
+        total_seconds += 1  # Incrémenter le nombre de secondes
         screen.fill((255, 255, 255))
 
         # Dessiner la carte
@@ -171,7 +176,30 @@ if __name__ == '__main__':
 
         pygame.display.flip()
         clock.tick(FPS)
+    final_average_idleness = total_idleness / total_seconds if total_seconds > 0 else 0
+    screen.fill((255, 255, 255))
+    # Afficher l'oisiveté moyenne finale au centre de l'écran
+    idle_text = f"Oisiveté moyenne : {final_average_idleness:.2f}"
+    idle_surface = font.render(idle_text, True, (0, 0, 0))  # Texte en noir
+    screen.blit(idle_surface, (WIDTH // 2 - idle_surface.get_width() // 2, HEIGHT // 2 - idle_surface.get_height() // 2))
 
+    # Dessiner un bouton "Quitter" en bas de l'écran
+    quit_button_rect = pygame.Rect(WIDTH - 100, HEIGHT - 40, 80, 30)
+    pygame.draw.rect(screen, (0, 0, 255), quit_button_rect)  # Bouton bleu
+    quit_text = font.render("Quitter", True, (255, 255, 255))
+    screen.blit(quit_text, (WIDTH - 95, HEIGHT - 30))
+
+    pygame.display.flip()
+
+    # Attendre que l'utilisateur clique sur "Quitter"
+    waiting_for_quit = True
+    while waiting_for_quit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                waiting_for_quit = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if quit_button_rect.collidepoint(event.pos):
+                    waiting_for_quit = False
     # Terminer et rejoindre chaque processus
     for agent in agents:
         agent.terminate()
