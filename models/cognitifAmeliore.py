@@ -296,13 +296,6 @@ if __name__ == '__main__':
         idle_surface = font.render(idle_text, True, (0, 0, 0))  # Texte en noir
         screen.blit(idle_surface, (10, 10))  # Affiche le texte en haut à gauche
 
-        average_idleness = calculate_average_idleness(last_visited_shared)
-
-        # Afficher l'oisiveté moyenne
-        idle_text = f"Oisiveté moyenne : {average_idleness:.2f}"
-        idle_surface = font.render(idle_text, True, (0, 0, 0))  # Texte en noir
-        screen.blit(idle_surface, (10, 10))  # Affiche le texte en haut à gauche
-
         # Récupérer et dessiner chaque agent
         for i in range(num_agents):
             if not position_queues[i].empty():
