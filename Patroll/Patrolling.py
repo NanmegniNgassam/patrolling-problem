@@ -5,8 +5,8 @@ import time
 from graphstructure import *  # Assurez-vous que nodes et edges sont définis dans graphstructure
 from collections import deque  # Pour BFS
 from display import *
-from Patroll.algos.algoruntime import *
-from Patroll.algos.algorandom import *
+from algos.algorandom import *
+from algos.algoruntime import *
 import pygame
 
 

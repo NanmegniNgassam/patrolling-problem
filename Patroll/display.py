@@ -35,7 +35,7 @@ RUNTIME_BUTTON = pygame.Rect(
 def display_menu(screen,font):
     screen.fill(WHITE)
 
-    background = pygame.image.load("test\image0.jpg")  # Remplace par le chemin de ton image
+    background = pygame.image.load("Patroll\image0.jpg")  # Remplace par le chemin de ton image
     background = pygame.transform.scale(background, (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))
 
