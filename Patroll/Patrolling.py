@@ -50,7 +50,7 @@ if __name__ == '__main__':
         position_queue = multiprocessing.Queue()
         position_queues.append(position_queue)
         if algorithm == "Random":
-            agent = multiprocessing.Process(target=agent_process_BFS, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock))
+            agent = multiprocessing.Process(target=agent_process_astar, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock))
         elif algorithm == "Runtime":
             agent = multiprocessing.Process(target=agent_process, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
         elif algorithm == "Chemin":

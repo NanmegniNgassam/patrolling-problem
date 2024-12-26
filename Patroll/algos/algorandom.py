@@ -1,6 +1,7 @@
 import random
 import math
 import time
+import heapq
 from graphstructure import *  # Assurez-vous que nodes et edges sont définis dans graphstructure
 from display import *
 from collections import deque  # Pour BFS
@@ -16,26 +17,37 @@ for a, b in edges:
     adjacency_list[b].append(a)
 
 
+# Heuristique (distance euclidienne)
+def heuristic(node_a, node_b):
+    x1, y1 = nodes_position[node_a]
+    x2, y2 = nodes_position[node_b]
+    return math.hypot(x2 - x1, y2 - y1)
 
-def bfs_shortest_path(start, goal):
-    queue = deque([[start]])  # File de chemins, initialisée avec le nœud de départ
+# Algorithme A* pour trouver le chemin le plus court
+def a_star_shortest_path(start, goal):
+    open_set = []
+    heapq.heappush(open_set, (0, start, [start]))  # (coût estimé, nœud actuel, chemin)
+    g_score = {i: float('inf') for i in range(len(nodes_position))}
+    g_score[start] = 0
 
-    while queue:
-        path = queue.popleft()  # Récupérer le premier chemin
-        node = path[-1]  # Dernier nœud du chemin actuel
+    while open_set:
+        _, current, path = heapq.heappop(open_set)
 
-        if node == goal:  # Si le nœud cible est atteint
+        if current == goal:
             return path
 
-        for neighbor in adjacency_list[node]:
-            new_path = list(path)
-            new_path.append(neighbor)
-            queue.append(new_path)
+        for neighbor in adjacency_list[current]:
+            tentative_g_score = g_score[current] + heuristic(current, neighbor)
+            if tentative_g_score < g_score[neighbor]:
+                g_score[neighbor] = tentative_g_score
+                f_score = tentative_g_score + heuristic(neighbor, goal)
+                heapq.heappush(open_set, (f_score, neighbor, path + [neighbor]))
 
     return []  # Aucun chemin trouvé
 
+
 # Fonction de déplacement de l'agent avec chemin donné
-def agent_process_BFS(agent_id, position_queue, last_visited_shared, shared_list_next_node, lock):
+def agent_process_astar(agent_id, position_queue, last_visited_shared, shared_list_next_node, lock):
     agent_position = nodes_position[0]
     agent_node_index = 0
     path = []  # Chemin que l'agent doit suivre
@@ -46,7 +58,7 @@ def agent_process_BFS(agent_id, position_queue, last_visited_shared, shared_list
         if not path or path_index >= len(path):
             # Choisir un nouveau nœud cible aléatoire
             target_node = random.randint(0, len(nodes_position) - 1)
-            path = bfs_shortest_path(agent_node_index, target_node)
+            path = a_star_shortest_path(agent_node_index, target_node)
             if not path:
                 continue
             path_index = 0
