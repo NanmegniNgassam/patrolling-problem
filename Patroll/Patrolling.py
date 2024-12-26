@@ -7,6 +7,7 @@ from collections import deque  # Pour BFS
 from display import *
 from algos.algorandom import *
 from algos.algoruntime import *
+from algos.algochemin import *
 import pygame
 
 
@@ -26,7 +27,15 @@ if __name__ == '__main__':
     agent_positions = manager.list([initial_node] * num_agents)
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen
-    
+    chemins = []
+    chemins.append((0, 2, 5, 3, 4, 1, 6, 28, 30, 31, 29, 13, 9, 11, 7, 8, 10, 12, 41, 43, 42, 40, 42, 26, 21, 22, 24, 25, 23, 27, 39, 37, 36, 38, 20, 15, 19, 14, 18, 17, 
+    16, 18, 15, 19, 35, 33, 32, 34, 35, 33, 32, 34, 32, 5, 3, 44, 46, 48, 47, 49, 45, 49, 45, 49, 45, 48, 44, 3, 6, 1, 6, 1, 3, 6, 3, 1, 4, 0))
+    chemins.append((0, 7, 8, 9, 20, 19, 26, 33, 34, 27, 35, 38, 39, 43, 45, 46, 48, 47, 44, 39, 40, 41, 37, 31, 29, 23, 18, 15, 12, 11, 4, 5, 6, 13, 16, 24, 25, 32, 42, 49, 41, 
+    36, 22, 28, 30, 28, 22, 21, 17, 10, 14, 17, 9, 3, 2, 1, 0))
+    chemins.append((0, 1, 2, 3, 10, 17, 21, 22, 28, 30, 29, 31, 36, 37, 41, 49, 42, 32, 25, 24, 16, 13, 6, 5, 4, 11, 12, 15, 18, 23, 18, 14, 10, 9, 20, 27, 35, 38, 34, 39, 43, 45, 46, 40, 46, 48, 47, 44, 33, 26, 19, 7, 8, 1, 8, 7, 0))
+
+
+
     # Initialisation de pygame
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -38,29 +47,26 @@ if __name__ == '__main__':
     algorithm = display_menu(screen,FONT)
 
     for i in range(num_agents):
+        position_queue = multiprocessing.Queue()
+        position_queues.append(position_queue)
         if algorithm == "Random":
-            position_queue = multiprocessing.Queue()
-            position_queues.append(position_queue)
             agent = multiprocessing.Process(target=agent_process_BFS, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock))
-            agents.append(agent)
-            agent.start()
         elif algorithm == "Runtime":
-            position_queue = multiprocessing.Queue()
-            position_queues.append(position_queue)
             agent = multiprocessing.Process(target=agent_process, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
-            agents.append(agent)
-            agent.start()
-
+        elif algorithm == "Chemin":
+            agent = multiprocessing.Process(target=agent_process_chemins, args=(i, position_queue, chemins[i], last_visited_shared))
+        agents.append(agent)
+        agent.start()
     running = True
     start_time = time.time()
     total_idleness = 0
     total_seconds = 0
 
     idleness_data = []
-
+    
     while running:
         elapsed_time = time.time() - start_time
-        if elapsed_time >= 2:
+        if elapsed_time >= 40:
             running = False
             stop_simulation.value = True
         display_graph(screen, FONT,nodes_position, edges, last_visited_shared,num_agents,position_queues,agent_positions)

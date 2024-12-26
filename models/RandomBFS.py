@@ -7,7 +7,7 @@ from collections import deque  # Pour BFS
 from graphstructure import *  # Assurez-vous que nodes et edges sont définis dans graphstructure
 from collections import deque  # Pour BFS
 from heapq import heappush, heappop
-
+    
 # Configuration de la fenêtre
 WIDTH, HEIGHT = 750, 520
 NODE_RADIUS = 10
@@ -18,6 +18,8 @@ EDGE_COLOR = (200, 200, 200)
 AGENT_COLOR = (255, 0, 0)  # Couleur de l'agent
 FPS = 30
 PROXIMITY_THRESHOLD = 10  # Distance de tolérance pour considérer qu’un agent est sur un nœud
+
+
 
 # Agent setup
 agent_speed = 5
@@ -48,45 +50,6 @@ def bfs_shortest_path(start, goal):
             new_path = list(path)
             new_path.append(neighbor)
             queue.append(new_path)
-
-    return []  # Aucun chemin trouvé
-
-def a_star_shortest_path(start, goal):
-    def heuristic(node1, node2):
-        # Distance euclidienne comme heuristique
-        x1, y1 = nodes_position[node1]
-        x2, y2 = nodes_position[node2]
-        return math.hypot(x2 - x1, y2 - y1)
-
-    open_set = []  # Min-heap pour les nœuds à explorer
-    heappush(open_set, (0, start))  # (coût estimé, nœud actuel)
-
-    came_from = {}  # Pour reconstruire le chemin
-    g_score = {i: float('inf') for i in range(len(nodes_position))}
-    g_score[start] = 0
-
-    f_score = {i: float('inf') for i in range(len(nodes_position))}
-    f_score[start] = heuristic(start, goal)
-
-    while open_set:
-        _, current = heappop(open_set)
-
-        if current == goal:  # Si on atteint le nœud cible
-            path = []
-            while current in came_from:
-                path.append(current)
-                current = came_from[current]
-            return path[::-1]  # Retourner le chemin dans l'ordre
-
-        for neighbor in adjacency_list[current]:
-            tentative_g_score = g_score[current] + heuristic(current, neighbor)
-
-            if tentative_g_score < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, goal)
-                if neighbor not in [i[1] for i in open_set]:  # Éviter les doublons
-                    heappush(open_set, (f_score[neighbor], neighbor))
 
     return []  # Aucun chemin trouvé
 

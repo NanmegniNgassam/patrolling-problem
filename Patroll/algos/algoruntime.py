@@ -43,6 +43,7 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
     agent_target_position = nodes_position[1]  # Première cible
     agent_node_index = 0
     next_node_index = 0
+
     while not stop_simulation.value:
         x1, y1 = agent_position
         x2, y2 = agent_target_position
@@ -59,8 +60,8 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
             last_visited_shared[agent_node_index] = time.time()  # Mise à jour du temps de visite
 
             # Décision cognitive : vérifier si on doit aller vers un nœud éloigné avec grande oisiveté
-            if not shared_list_chemins[agent_id]:  # Si l'agent n'a pas encore de chemin à suivre
-                if random.random() < 0.05: 
+            if not shared_list_chemins[agent_id] and num_agents != 1:  # Si l'agent n'a pas encore de chemin à suivre
+                if random.random() < 0.03: 
                     with lock:
                         # Calculer le nœud avec la plus grande oisiveté
                         max_idleness_node = max(
@@ -150,11 +151,20 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
                 )
                 with lock:
                     if next_node_index in shared_list_next_node and len(voisins) > 1:
-                        voisins.remove(next_node_index)
-                        next_node_index = min(
-                            voisins,
-                            key=lambda x: last_visited_shared[x] if last_visited_shared[x] is not None else -float('inf')
-                        )
+                        # Choisir un autre voisin parmi les voisins restants
+                        voisins_restants = [v for v in voisins if v != next_node_index]  # Liste de voisins sans le nœud actuel
+                        # Si nous avons encore des voisins à choisir
+                        if voisins_restants:
+                            next_node_index = min(
+                                voisins_restants,
+                                key=lambda x: last_visited_shared[x] if last_visited_shared[x] is not None else -float('inf')
+                            )
+                        else:
+                            # Si aucun autre voisin, on peut reprendre le même ou choisir aléatoirement parmi tous les voisins
+                            next_node_index = min(
+                                voisins,
+                                key=lambda x: last_visited_shared[x] if last_visited_shared[x] is not None else -float('inf')
+                            )
 
             # Mise à jour de la nouvelle cible
             with lock:

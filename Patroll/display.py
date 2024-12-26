@@ -19,6 +19,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 LIGHT_BLUE = (173, 216, 230)
+
 RANDOM_BUTTON = pygame.Rect(
     (WIDTH - BUTTON_WIDTH) // 2,
     (HEIGHT - BUTTON_HEIGHT) // 2 - 60,
@@ -31,6 +32,48 @@ RUNTIME_BUTTON = pygame.Rect(
     BUTTON_WIDTH,
     BUTTON_HEIGHT,
 )
+CHEMIN_BUTTON = pygame.Rect(
+    (WIDTH - BUTTON_WIDTH) // 2,
+    (HEIGHT - BUTTON_HEIGHT) // 2 + 100,
+    BUTTON_WIDTH,
+    BUTTON_HEIGHT,
+)
+
+
+# Dimensions de la fenêtre
+min_x = min(node[0] for node in nodes_position)
+max_x = max(node[0] for node in nodes_position)
+min_y = min(node[1] for node in nodes_position)
+max_y = max(node[1] for node in nodes_position)
+
+# Dimensions de la carte
+map_width = max_x - min_x
+map_height = max_y - min_y
+
+# Calculer un facteur de mise à l'échelle pour que la carte prenne presque toute la fenêtre
+scale_factor = min(WIDTH / map_width, HEIGHT / map_height) * 0.9  # Le *0.9 rend la carte un peu plus petite
+
+# Nouvelle taille de la carte après mise à l'échelle
+scaled_map_width = map_width * scale_factor
+scaled_map_height = map_height * scale_factor
+
+# Calculer le centre de la carte (en coordonnées locales)
+center_x = min_x + map_width / 2
+center_y = min_y + map_height / 2
+
+# Calculer le centre de la carte après mise à l'échelle (en pixels)
+center_x_scaled = center_x * scale_factor
+center_y_scaled = center_y * scale_factor
+
+# Offsets pour centrer la carte dans la fenêtre
+offset_x = WIDTH / 2 - center_x_scaled
+offset_y = HEIGHT / 2 - center_y_scaled
+
+
+# Appliquer les offsets et la mise à l'échelle
+nodes_position = [(min_x + (x - min_x) * scale_factor + offset_x, 
+                   min_y + (y - min_y) * scale_factor + offset_y) 
+                  for x, y in nodes_position]
 
 def display_menu(screen,font):
     screen.fill(WHITE)
@@ -49,9 +92,12 @@ def display_menu(screen,font):
     # Dessiner les boutons
     pygame.draw.rect(screen, LIGHT_BLUE, RANDOM_BUTTON)
     pygame.draw.rect(screen, LIGHT_BLUE, RUNTIME_BUTTON)
+    pygame.draw.rect(screen, LIGHT_BLUE, CHEMIN_BUTTON)
+
 
     random_text = font_button.render("Random", True, BLACK)
     runtime_text = font_button.render("Runtime", True, BLACK)
+    chemin_text = font_button.render("Chemin", True, BLACK)
 
     # Centrer le texte sur les boutons
     screen.blit(
@@ -62,7 +108,10 @@ def display_menu(screen,font):
         runtime_text,
         runtime_text.get_rect(center=RUNTIME_BUTTON.center),
     )
-
+    screen.blit(
+        chemin_text,
+        chemin_text.get_rect(center=CHEMIN_BUTTON.center),
+    )
     pygame.display.flip()
     running = True
     while running:
@@ -76,6 +125,8 @@ def display_menu(screen,font):
                     return "Random"
                 elif RUNTIME_BUTTON.collidepoint(mouse_pos):
                     return "Runtime"
+                elif CHEMIN_BUTTON.collidepoint(mouse_pos):
+                    return "Chemin"
 
 
 def calculate_node_color(last_visit_time):

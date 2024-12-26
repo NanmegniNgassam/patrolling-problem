@@ -18,6 +18,37 @@ AGENT_COLOR = (255, 0, 0)  # Couleur de l'agent
 FPS = 30
 PROXIMITY_THRESHOLD = 10  # Distance de tolérance pour considérer qu’un agent est sur un nœud
 
+# Dimensions de la fenêtre
+min_x = min(node[0] for node in nodes_position)
+max_x = max(node[0] for node in nodes_position)
+min_y = min(node[1] for node in nodes_position)
+max_y = max(node[1] for node in nodes_position)
+
+# Dimensions de la carte
+map_width = max_x - min_x
+map_height = max_y - min_y
+
+# Calculer un facteur de mise à l'échelle pour que la carte prenne presque toute la fenêtre
+scale_factor = min(WIDTH / map_width, HEIGHT / map_height) * 0.9  # Le *0.9 rend la carte un peu plus petite
+
+# Nouvelle taille de la carte après mise à l'échelle
+scaled_map_width = map_width * scale_factor
+scaled_map_height = map_height * scale_factor
+
+# Calculer le centre de la carte
+center_x = min_x + map_width / 2
+center_y = min_y + map_height / 2
+
+# Offsets pour centrer la carte dans la fenêtre
+offset_x = WIDTH / 2 - center_x * scale_factor
+offset_y = HEIGHT / 2 - center_y * scale_factor
+
+# Appliquer les offsets et la mise à l'échelle
+nodes_position = [(min_x + (x - min_x) * scale_factor + offset_x, 
+                   min_y + (y - min_y) * scale_factor + offset_y) 
+                  for x, y in nodes_position]
+
+
 # Agent setup
 agent_speed = 5
 num_agents = 3
@@ -203,6 +234,10 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
                             with lock:
                                 shared_list_chemins[agent_id] = monchemin
 
+                                
+            if next_node_index == agent_node_index:
+                # Si l'agent reste au même nœud, cela pourrait entraîner une boucle infinie
+                continue  # Sauter à l'itération suivante pour éviter de bloquer
             if shared_list_chemins[agent_id]:
                 # Suivre le chemin calculé
                 shared_list_chemins_local = list(shared_list_chemins[agent_id]) # Crée une copie locale
