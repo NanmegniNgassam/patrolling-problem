@@ -77,7 +77,8 @@ nodes_position = [(min_x + (x - min_x) * scale_factor + offset_x,
 
 def display_menu(screen,font):
     screen.fill(WHITE)
-
+    num_agents = 1
+    
     background = pygame.image.load("Patroll\image0.jpg")  # Remplace par le chemin de ton image
     background = pygame.transform.scale(background, (WIDTH, HEIGHT))
     screen.blit(background, (0, 0))

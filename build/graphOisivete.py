@@ -18,7 +18,7 @@ PROXIMITY_THRESHOLD = 10  # Distance de tolérance pour considérer qu’un agen
 
 # Agent setup
 agent_speed = 10
-num_agents = 1
+num_agents = 3
 
 # Informations récupérées depuis graphstructure
 adjacency_list = {i: [] for i in range(len(nodes_position))}
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     initial_target_node = nodes_position[2]
 
     chemins = []
-    chemins.append((0, 2, 5, 3, 6, 1, 4, 32, 34, 35, 33, 19, 15, 18, 14, 16, 17, 20, 38, 36, 37, 39, 22, 24, 25, 23, 27, 21, 26, 42, 40, 41, 43, 12, 10, 8, 11, 9, 13, 7, 29, 31, 30, 28, 46, 44, 48, 45, 49, 47, 0))
+    chemins.append((0, 4, 2, 5, 3, 6, 1, 3, 5, 32, 34, 35, 33, 35, 19, 14, 18, 17, 20, 15, 17, 16, 17, 20, 38, 36, 37, 39, 27, 23, 21, 25, 24, 22, 26, 42, 40, 41, 43, 41, 12, 9, 11, 8, 10, 9, 7, 13, 29, 31, 30, 28, 6, 3, 44, 48, 45, 49, 47, 46, 44, 3, 1, 0))
     
 
     print(chemins)
