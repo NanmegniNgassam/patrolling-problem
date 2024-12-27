@@ -1,7 +1,6 @@
 from graphstructure import *
 from algo_genetic import *
 from tqdm import tqdm
-
 # ALGORITHME ACO
 def initialize_pheromones(num_cities, tau_0=1.0):
     """Initialise la matrice de phéromones."""

@@ -6,7 +6,6 @@ from graphstructure import *  # Assurez-vous que nodes et edges sont définis da
 from display import *
 
 agent_speed = 5
-num_agents = 3
 FPS = 30
 
 
@@ -37,7 +36,7 @@ def shortest_path(graph, start, end):
     
     return []  # Aucun chemin trouvé
 
-def agent_process(agent_id, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
+def agent_process(agent_id,num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
     
     agent_position = nodes_position[0]  # Position initiale
     agent_target_position = nodes_position[1]  # Première cible
@@ -57,7 +56,8 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
                 node_locked[agent_node_index] = False
 
             agent_node_index = next_node_index
-            last_visited_shared[agent_node_index] = time.time()  # Mise à jour du temps de visite
+            with lock:
+                last_visited_shared[agent_node_index] = time.time()  # Mise à jour du temps de visite
 
             # Décision cognitive : vérifier si on doit aller vers un nœud éloigné avec grande oisiveté
             if not shared_list_chemins[agent_id] and num_agents != 1:  # Si l'agent n'a pas encore de chemin à suivre
@@ -135,12 +135,14 @@ def agent_process(agent_id, position_queue, last_visited_shared, shared_list_nex
 
             if shared_list_chemins[agent_id]:
                 # Suivre le chemin calculé
-                shared_list_chemins_local = list(shared_list_chemins[agent_id]) # Crée une copie locale
+                with lock:
+                    shared_list_chemins_local = list(shared_list_chemins[agent_id]) # Crée une copie locale
                 next_node_index = shared_list_chemins_local[0]
                 shared_list_chemins_local.pop(0)
                 if not shared_list_chemins_local:
                     shared_list_chemins_local = None
-                shared_list_chemins[agent_id] = shared_list_chemins_local  # Réécrit dans le ListProxy
+                with lock:
+                    shared_list_chemins[agent_id] = shared_list_chemins_local  # Réécrit dans le ListProxy
             else:
                 # Logique normale : choisir parmi les voisins
                 voisins = adjacency_list[agent_node_index]

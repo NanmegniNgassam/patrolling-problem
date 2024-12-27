@@ -8,7 +8,6 @@ from collections import deque  # Pour BFS
 FPS = 30
 
 agent_speed = 5
-num_agents = 3
 
 # Informations récupérées depuis graphstructure
 adjacency_list = {i: [] for i in range(len(nodes_position))}
@@ -47,13 +46,13 @@ def a_star_shortest_path(start, goal):
 
 
 # Fonction de déplacement de l'agent avec chemin donné
-def agent_process_astar(agent_id, position_queue, last_visited_shared, shared_list_next_node, lock):
+def agent_process_astar(agent_id, position_queue, last_visited_shared, shared_list_next_node, lock,stop_simulation):
     agent_position = nodes_position[0]
     agent_node_index = 0
     path = []  # Chemin que l'agent doit suivre
     path_index = 0
 
-    while True:
+    while not stop_simulation.value:
         # Si l'agent a atteint sa cible ou n'a pas de chemin à suivre
         if not path or path_index >= len(path):
             # Choisir un nouveau nœud cible aléatoire

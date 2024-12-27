@@ -19,6 +19,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 LIGHT_BLUE = (173, 216, 230)
+DARK_BLUE = (100, 149, 237)
 
 RANDOM_BUTTON = pygame.Rect(
     (WIDTH - BUTTON_WIDTH) // 2,
@@ -38,6 +39,14 @@ CHEMIN_BUTTON = pygame.Rect(
     BUTTON_WIDTH,
     BUTTON_HEIGHT,
 )
+
+# Boutons pour le choix du nombre d'agents (au milieu à droite)
+button_width, button_height = 40, 40
+center_right_x = WIDTH - 150  # Décalage du bord droit
+center_y = HEIGHT // 2
+
+MINUS_BUTTON = pygame.Rect(center_right_x - button_width - 15, center_y - 35, button_width, button_height)
+PLUS_BUTTON = pygame.Rect(center_right_x + 10, center_y - 35, button_width, button_height)
 
 
 # Dimensions de la fenêtre
@@ -75,59 +84,92 @@ nodes_position = [(min_x + (x - min_x) * scale_factor + offset_x,
                    min_y + (y - min_y) * scale_factor + offset_y) 
                   for x, y in nodes_position]
 
-def display_menu(screen,font):
-    screen.fill(WHITE)
+def display_menu(screen):
+    # Nombre d'agents (initialement 1)
     num_agents = 1
-    
-    background = pygame.image.load("Patroll/image0.jpg")  # Remplace par le chemin de ton image
-    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
-    screen.blit(background, (0, 0))
 
+    # Charger l'image de fond
+    try:
+        background = pygame.image.load("Patroll/image0.jpg")
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+        screen.blit(background, (0, 0))
+    except pygame.error as e:
+        print(f"Erreur lors du chargement de l'image : {e}")
+
+    # Définir les polices
     font_title = pygame.font.Font(None, 50)
     font_button = pygame.font.Font(None, 40)
-    # Dessiner le titre centré
-    title = font_title.render("Choisissez un algorithme :", True, BLACK)
-    title_rect = title.get_rect(center=(WIDTH // 2, 50))
-    screen.blit(title, title_rect)
+    font_label = pygame.font.Font(None, 35)
 
-    # Dessiner les boutons
-    pygame.draw.rect(screen, LIGHT_BLUE, RANDOM_BUTTON)
-    pygame.draw.rect(screen, LIGHT_BLUE, RUNTIME_BUTTON)
-    pygame.draw.rect(screen, LIGHT_BLUE, CHEMIN_BUTTON)
-
-
-    random_text = font_button.render("Random", True, BLACK)
-    runtime_text = font_button.render("Runtime", True, BLACK)
-    chemin_text = font_button.render("Chemin", True, BLACK)
-
-    # Centrer le texte sur les boutons
-    screen.blit(
-        random_text,
-        random_text.get_rect(center=RANDOM_BUTTON.center),
-    )
-    screen.blit(
-        runtime_text,
-        runtime_text.get_rect(center=RUNTIME_BUTTON.center),
-    )
-    screen.blit(
-        chemin_text,
-        chemin_text.get_rect(center=CHEMIN_BUTTON.center),
-    )
-    pygame.display.flip()
     running = True
     while running:
+        # Effacer l'écran et afficher l'arrière-plan
+        screen.fill(WHITE)
+        screen.blit(background, (0, 0))
+
+        # Titre
+        title = font_title.render("Choisissez un algorithme :", True, BLACK)
+        title_rect = title.get_rect(center=(WIDTH // 2, 50))
+        screen.blit(title, title_rect)
+
+        # Boutons pour les algorithmes
+        pygame.draw.rect(screen, LIGHT_BLUE, RANDOM_BUTTON)
+        pygame.draw.rect(screen, LIGHT_BLUE, RUNTIME_BUTTON)
+        pygame.draw.rect(screen, LIGHT_BLUE, CHEMIN_BUTTON)
+
+        # Texte des boutons
+        random_text = font_button.render("Random", True, BLACK)
+        runtime_text = font_button.render("Runtime", True, BLACK)
+        chemin_text = font_button.render("Chemin", True, BLACK)
+
+        # Positionnement du texte
+        screen.blit(random_text, random_text.get_rect(center=RANDOM_BUTTON.center))
+        screen.blit(runtime_text, runtime_text.get_rect(center=RUNTIME_BUTTON.center))
+        screen.blit(chemin_text, chemin_text.get_rect(center=CHEMIN_BUTTON.center))
+
+        # Section choix du nombre d'agents (au milieu à droite)
+        label_text = font_label.render("Nombre d'agents", True, BLACK)
+        label_rect = label_text.get_rect(center=(center_right_x, center_y - 100))  # Texte au-dessus du nombre
+        screen.blit(label_text, label_rect)
+
+        agents_text = font_label.render(f"{num_agents}", True, BLACK)
+        agents_rect = agents_text.get_rect(center=(center_right_x, center_y - 60))  # Nombre juste au-dessus des boutons
+        screen.blit(agents_text, agents_rect)
+
+        # Boutons + et -
+        pygame.draw.rect(screen, DARK_BLUE, MINUS_BUTTON)
+        pygame.draw.rect(screen, DARK_BLUE, PLUS_BUTTON)
+
+        # Texte des boutons
+        minus_text = font_button.render("-", True, WHITE)
+        plus_text = font_button.render("+", True, WHITE)
+        screen.blit(minus_text, minus_text.get_rect(center=MINUS_BUTTON.center))
+        screen.blit(plus_text, plus_text.get_rect(center=PLUS_BUTTON.center))
+
+        # Rafraîchir l'affichage
+        pygame.display.flip()
+
+        # Gestion des événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+                return None, None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+
+                # Détection des clics sur les boutons d'algorithmes
                 if RANDOM_BUTTON.collidepoint(mouse_pos):
-                    return "Random"
+                    return "Random", num_agents
                 elif RUNTIME_BUTTON.collidepoint(mouse_pos):
-                    return "Runtime"
+                    return "Runtime", num_agents
                 elif CHEMIN_BUTTON.collidepoint(mouse_pos):
-                    return "Chemin"
+                    return "Chemin", num_agents
+
+                # Détection des clics sur les boutons "+" et "-"
+                elif MINUS_BUTTON.collidepoint(mouse_pos) and num_agents > 1:
+                    num_agents -= 1
+                elif PLUS_BUTTON.collidepoint(mouse_pos) and num_agents < 5:
+                    num_agents += 1
 
 
 def calculate_node_color(last_visit_time):
