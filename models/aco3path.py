@@ -1,147 +1,149 @@
-import random
-import math
 from graphstructure import *
+from algo_genetic import *
 from tqdm import tqdm
 
-# Liste qui contient les noeuds visi
-visited_nodes = []
+# ALGORITHME ACO
+def initialize_pheromones(num_cities, tau_0=1.0):
+    """Initialise la matrice de phéromones."""
+    return np.full((num_cities, num_cities), tau_0)
 
-class Graph:
-    def __init__(self):
-        self.edges = {}
-    
-    def add_edge(self, from_node, to_node, distance):
-        if from_node not in self.edges:
-            self.edges[from_node] = {}
-        self.edges[from_node][to_node] = {'distance': distance, 'pheromone': 1.0}  # initial pheromone level set to 1.0
+def calculate_visibility(distance_matrix):
+    """Calcule la matrice de visibilité (1 / distance)."""
+    with np.errstate(divide='ignore'):
+        visibility = 1 / distance_matrix
+        visibility[distance_matrix == 0] = 0
+    return visibility
 
-    def get_nodes(self):
-        return list(self.edges.keys())
+def select_next_city(current_city, allowed_cities, pheromones, visibility, alpha, beta, graph):
+    """Sélectionne la prochaine ville en fonction des probabilités."""
+    probs = []
+    allowed_cities_accessible = []
+    for city in allowed_cities:
+        if graph.has_edge(current_city, city):
+            prob = (pheromones[current_city, city] ** alpha) * (visibility[current_city, city] ** beta)
+            probs.append(prob)
+            allowed_cities_accessible.append(city)
+    if len(probs)==0:
+        for city in allowed_cities:
+            prob = (pheromones[current_city, city] ** alpha) * (visibility[current_city, city] ** beta)
+            probs.append(prob)
+            allowed_cities_accessible.append(city)
 
-def create_graph():
-    graph = Graph()
-    distances = {frozenset([a, b]): math.hypot(nodes_position[a][0] - nodes_position[b][0], nodes_position[a][1] - nodes_position[b][1]) for a, b in edges}
-    for (i, j), d in distances.items():
-        graph.add_edge(i, j, d)
-        graph.add_edge(j, i, d)
-    return graph
+    probs = np.array(probs) / sum(probs)  # Normalisation
+    return np.random.choice(allowed_cities_accessible, p=probs)
 
-graph = create_graph()
+def construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph):
+    """Construit un chemin pour une fourmi en partant du nœud spécifié."""
+    solution = [[start_node] for _ in range(num_agents)]
+    allowed_cities = [c for c in range(num_cities)]
+    #for _ in range(num_cities - 1):
+    while len(allowed_cities)>1:
+        for agent in range(num_agents):
+            if len(allowed_cities) >1:
+                current_city = solution[agent][-1]
 
-class AntColonyOptimizer:
-    def __init__(self, graph, alpha=1, beta=0.2, evaporation_rate=0.001, num_groups=3):
-        self.graph = graph
-        self.alpha = alpha  # influence of pheromone
-        self.beta = beta    # influence of distance
-        self.evaporation_rate = evaporation_rate
-        self.num_groups = num_groups
-        self.visited_nodes = set()  # Global list of visited nodes
-    
-    def choose_next_node(self, current_node, visited):
-        neighbors = self.graph.edges[current_node]
-        probabilities = []
-        for node, data in neighbors.items():
-            if node not in visited:  # Avoid revisiting nodes
-                pheromone = (data['pheromone']) ** self.alpha
-                heuristic = (1.0 / data['distance']) ** self.beta
-                probabilities.append((node, pheromone * heuristic))
+                nodes_visites = list(set(element for sous_liste in solution for element in sous_liste))
+                allowed_cities = [c for c in range(num_cities) if c not in nodes_visites]
 
-        if not probabilities: # No unvisited nodes in the neighbourhood : we decide among the visited nodesaccording to the proba
-            for node, data in neighbors.items():
-                pheromone = (data['pheromone']) ** self.alpha
-                heuristic = (1.0 / data['distance']) ** self.beta
-                probabilities.append((node, pheromone * heuristic))
+                next_city = select_next_city(current_city, allowed_cities, pheromones, visibility, alpha, beta, graph)
+                solution[agent].append(next_city)
+    for chemin_individuel in solution:
+        chemin_individuel.append(start_node) # Retour au nœud de départ
+    return solution 
 
-        total = sum(prob[1] for prob in probabilities)
-        probabilities = [(node, prob / total) for node, prob in probabilities]
-        next_node = random.choices([prob[0] for prob in probabilities], weights=[prob[1] for prob in probabilities])[0]
-        return next_node
+def update_pheromones(pheromones, solutions, distances, rho, Q):
+    """Met à jour la matrice de phéromones."""
+    pheromones *= (1 - rho)  # Évaporation
+    for solution in solutions:
 
-
-    def simulate_ants(self, start_node, num_agents):
-        path = [start_node]
-        visited = set(path)
-
-        paths = [[] for _ in range(num_agents)]
-        current_nodes = [start_node for _ in range(num_agents)]
-
-        while any(x != start_node for x in current_nodes) or len(visited) != len(self.graph.get_nodes()): # Continue until all nodes are by the ants
-            for i in range(num_agents):
-                if current_nodes[i] == start_node and len(visited) == len(self.graph.get_nodes()): # If all the nodes have been visited, when an agent reaches the start node he just waits that the other agents come back as well
-                    continue
-                next_node = self.choose_next_node(current_nodes[i], visited)
-                if next_node is None:
-                    break
-                paths[i].append(next_node)
-                if not next_node in visited:
-                    visited.add(next_node)
-                    self.visited_nodes.add(next_node)  # Update global visited nodes
-                current_nodes[i] = next_node
-        return paths
-
-    def calculate_cost(self, all_paths):
-        covered_nodes = set()
-        distance_paths = []
-        for paths in all_paths:
-            distance = 0
-            for path in paths:
-                covered_nodes.update(path)
-                distance += sum(graph.edges[path[i]][path[i+1]]['distance'] for i in range(len(path) - 1))
-            distance_paths.append(distance)
-
-        index_min = distance_paths.index(min(distance_paths))
-        return index_min, min(distance_paths)
-
-    def update_pheromones(self, all_paths):
-        # Global pheromone update
-        for from_node, neighbors in self.graph.edges.items():
-            for to_node, data in neighbors.items():
-                data['pheromone'] *= (1 - self.evaporation_rate)
-
-        # Add pheromones based on paths
-        for paths in all_paths:
-            for path in paths:
-                path_length = sum(self.graph.edges[path[i]][path[i+1]]['distance'] for i in range(len(path) - 1))
-                pheromone_deposit = 1.0 / path_length
-                for i in range(len(path) - 1):
-                    self.graph.edges[path[i]][path[i+1]]['pheromone'] += pheromone_deposit
-                    self.graph.edges[path[i+1]][path[i]]['pheromone'] += pheromone_deposit
-
-def optimize_paths(graph, num_groups=3, num_ants = 50, max_iterations=100):
-    aco = AntColonyOptimizer(graph, num_groups=num_groups)
-
-    stable_iterations = 0
-    stable_threshold = 50
-
-    previous_cost = float('inf')
-
-    for _ in tqdm(range(max_iterations), desc="Optimization"):
-        all_paths = []
-        aco.visited_nodes = set()  # Reset global visited nodes for this iteration
-
-        for _ in range(num_ants):
-            #start_node = random.choice(list(graph.get_nodes()))
-            start_node = 0
-            paths = aco.simulate_ants(start_node, num_groups)
-            all_paths.append(paths)
+        path_length = sum(distances[solution[j][i], solution[j][i + 1]]
+                  for j in range(num_agents)  # Pour chaque agent
+                  for i in range(len(solution[j]) - 1))  # Pour chaque étape du chemin de l'agent, jusqu'à l'avant-dernière
         
-        aco.update_pheromones(all_paths)
-        index_best_way, current_cost = aco.calculate_cost(all_paths)
+        for j in range(len(solution) - 1):
+            for i in range(len(solution[j]) - 1):
+                pheromones[solution[j][i], solution[j][i + 1]] += Q / path_length
+    return pheromones
 
-        # Check for stability
-        if current_cost == previous_cost:
-            stable_iterations += 1
+def aco_tsp(distance_matrix, start_node, graph, num_ants=100, num_iterations=100, alpha=1.0, beta=2.0, rho=0.5, Q=100):
+    """Algorithme principal ACO pour le TSP."""
+    num_cities = distance_matrix.shape[0]
+    pheromones = initialize_pheromones(num_cities)
+    visibility = calculate_visibility(distance_matrix)
+    best_solution = None
+    best_length = float('inf')
+
+    for _ in tqdm(range(num_iterations), desc="Optimizing"):
+        solutions = []
+        for _ in range(num_ants):
+            solution = construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph)
+            solutions.append(solution)
+
+        for solution in solutions:
+            
+            path_length = sum(distance_matrix[solution[j][i], solution[j][i + 1]]
+                  for j in range(num_agents)  # Pour chaque agent
+                  for i in range(len(solution[j]) - 1))  # Pour chaque étape du chemin de l'agent, jusqu'à l'avant-dernière
+            
+            if path_length < best_length:
+                best_solution, best_length = solution, path_length
+
+        pheromones = update_pheromones(pheromones, solutions, distance_matrix, rho, Q)
+
+    return best_solution, best_length
+
+
+start_node = 0
+
+# CORRECTION CHEMIN
+def validate_path(graph, path):
+    for i in range(len(path) - 1):
+        if not graph.has_edge(path[i], path[i + 1]):
+            return False
+    return True
+
+
+def correct_path(graph, path):
+    corrected_path = []
+    for i in range(len(path) - 1):
+        if graph.has_edge(path[i], path[i + 1]):
+            corrected_path.append(path[i])
         else:
-            stable_iterations = 0
-        previous_cost = current_cost
+            # Trouver le chemin le plus court entre path[i] et path[i + 1]
+            shortest_subpath = nx.shortest_path(graph, source=path[i], target=path[i + 1])
+            corrected_path.extend(shortest_subpath[:-1])  # Ajouter le chemin sans dupliquer le nœud cible
+    corrected_path.append(path[-1])  # Ajouter le dernier nœud
+    return corrected_path
 
-        if stable_iterations >= stable_threshold:
-            print("Convergence atteinte après", _, "itérations.")
-            break
+# Renvoie les chemin de l'algo génétique
+def generate_path_with_genetic():
+    all_path = []
+    nodes, graph, distance_matrix = aco_parameters_with_genetic()
+    for node in nodes :
+        path, best_lenth=aco_tsp(distance_matrix, node, graph)
+        is_valid = validate_path(graph, path)
+        if not is_valid:
+            path = correct_path(graph, path)
+        print(f"Chemin trouvé : {path}")
+        all_path.append(path)
+    return all_path
 
-    return all_paths[index_best_way]
+# Renvoie le chemin de l'ACO commencant au noeud 0
+def generate_path():
+    all_path = []
+    graph = build_weighted_graph(nodes_position, edges)
+    distance_matrix = compute_weighted_distance_matrix(graph)
+    
+    path, best_lenth=aco_tsp(distance_matrix, 0, graph)
+    for i in range(len(path)):
+        is_valid = validate_path(graph, path[i])
+        if not is_valid:
+            path[i] = correct_path(graph, path[i])
+    print(f"Chemin trouvé : {path}")
+    all_path.append(path)
 
-# Exemple d'utilisation
-final_paths = optimize_paths(graph)
-for idx, path in enumerate(final_paths):
-    print(f"Agent {idx + 1}: {path}")
+    return all_path
+
+
+test = generate_path()
+#print(test)

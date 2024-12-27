@@ -1,5 +1,6 @@
 from graphstructure import *
 from algo_genetic import *
+from tqdm import tqdm
 
 # ALGORITHME ACO
 def initialize_pheromones(num_cities, tau_0=1.0):
@@ -49,7 +50,7 @@ def aco_tsp(distance_matrix, start_node, num_ants=100, num_iterations=100, alpha
     best_solution = None
     best_length = float('inf')
 
-    for _ in range(num_iterations):
+    for _ in tqdm(range(num_iterations), desc="Optimizing"):
         solutions = []
         for _ in range(num_ants):
             solution = construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node)

@@ -17,7 +17,7 @@ FPS = 30
 PROXIMITY_THRESHOLD = 10  # Distance de tolérance pour considérer qu’un agent est sur un nœud
 
 # Agent setup
-agent_speed = 10
+agent_speed = 5
 num_agents = 3
 
 # Informations récupérées depuis graphstructure
@@ -95,8 +95,9 @@ if __name__ == '__main__':
     initial_target_node = nodes_position[2]
 
     chemins = []
-    chemins.append((0, 4, 2, 5, 3, 6, 1, 3, 5, 32, 34, 35, 33, 35, 19, 14, 18, 17, 20, 15, 17, 16, 17, 20, 38, 36, 37, 39, 27, 23, 21, 25, 24, 22, 26, 42, 40, 41, 43, 41, 12, 9, 11, 8, 10, 9, 7, 13, 29, 31, 30, 28, 6, 3, 44, 48, 45, 49, 47, 46, 44, 3, 1, 0))
-    
+    chemins.append((0, 2, 5, 32, 34, 35, 33, 35, 19, 15, 20, 38, 36, 37, 39, 38, 20, 17, 18, 16, 14, 19, 35, 33, 32, 5, 2, 0))
+    chemins.append((0, 4, 3, 44, 48, 47, 46, 47, 45, 49, 21, 27, 23, 25, 24, 22, 26, 42, 26, 21, 49, 45, 44, 3, 1, 0))
+    chemins.append((0, 1, 6, 28, 30, 31, 29, 13, 7, 11, 8, 10, 12, 9, 12, 41, 43, 41, 40, 42, 26, 21, 49, 45, 44, 3, 1, 0))
 
     print(chemins)
     for i in range(num_agents):
