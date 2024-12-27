@@ -90,7 +90,7 @@ def display_menu(screen):
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("Patroll/image0.jpg")
+        background = pygame.image.load("patrolling-problem\Patroll\image0.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:

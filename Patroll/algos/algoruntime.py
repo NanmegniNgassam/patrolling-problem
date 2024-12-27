@@ -36,7 +36,7 @@ def shortest_path(graph, start, end):
     
     return []  # Aucun chemin trouvé
 
-def agent_process(agent_id,num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
+def agent_process_runtime(agent_id,num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
     
     agent_position = nodes_position[0]  # Position initiale
     agent_target_position = nodes_position[1]  # Première cible
