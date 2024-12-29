@@ -45,8 +45,8 @@ button_width, button_height = 40, 40
 center_right_x = WIDTH - 150  # Décalage du bord droit
 center_y = HEIGHT // 2
 
-MINUS_BUTTON = pygame.Rect(center_right_x - button_width - 15, center_y - 35, button_width, button_height)
-PLUS_BUTTON = pygame.Rect(center_right_x + 10, center_y - 35, button_width, button_height)
+MINUS_BUTTON = pygame.Rect(center_right_x - button_width - 20, center_y - 25, button_width, button_height)
+PLUS_BUTTON = pygame.Rect(center_right_x + 20, center_y - 25, button_width, button_height)
 
 
 # Dimensions de la fenêtre
@@ -120,7 +120,7 @@ def display_menu(screen):
         # Texte des boutons
         random_text = font_button.render("Random", True, BLACK)
         runtime_text = font_button.render("Runtime", True, BLACK)
-        chemin_text = font_button.render("Chemin", True, BLACK)
+        chemin_text = font_button.render("ACO", True, BLACK)
 
         # Positionnement du texte
         screen.blit(random_text, random_text.get_rect(center=RANDOM_BUTTON.center))
@@ -129,11 +129,11 @@ def display_menu(screen):
 
         # Section choix du nombre d'agents (au milieu à droite)
         label_text = font_label.render("Nombre d'agents", True, BLACK)
-        label_rect = label_text.get_rect(center=(center_right_x, center_y - 100))  # Texte au-dessus du nombre
+        label_rect = label_text.get_rect(center=(center_right_x, center_y - 75))  # Texte au-dessus du nombre
         screen.blit(label_text, label_rect)
 
         agents_text = font_label.render(f"{num_agents}", True, BLACK)
-        agents_rect = agents_text.get_rect(center=(center_right_x, center_y - 60))  # Nombre juste au-dessus des boutons
+        agents_rect = agents_text.get_rect(center=(center_right_x, center_y - 40))  # Nombre juste au-dessus des boutons
         screen.blit(agents_text, agents_rect)
 
         # Boutons + et -
@@ -163,7 +163,7 @@ def display_menu(screen):
                 elif RUNTIME_BUTTON.collidepoint(mouse_pos):
                     return "Runtime", num_agents
                 elif CHEMIN_BUTTON.collidepoint(mouse_pos):
-                    return "Chemin", num_agents
+                    return "ACO", num_agents
 
                 # Détection des clics sur les boutons "+" et "-"
                 elif MINUS_BUTTON.collidepoint(mouse_pos) and num_agents > 1:

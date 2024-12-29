@@ -9,6 +9,7 @@ from algos.algoruntime import *
 from algos.algochemin import *
 from algos.algoaco import generate_path
 
+
 if __name__ == '__main__':
     # Initialisation de pygame
     pygame.init()
@@ -17,8 +18,7 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     font_size = 12
     FONT = pygame.font.Font(None, font_size)  
-    algorithm, test = display_menu(screen)
-    num_agents = 3
+    algorithm, num_agents = display_menu(screen)
 
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
@@ -35,13 +35,10 @@ if __name__ == '__main__':
     agent_positions = manager.list([initial_node] * num_agents)
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen
-    #chemins = []
-    # chemins.append((0, 2, 5, 32, 34, 35, 33, 35, 19, 15, 17, 20, 38, 36, 37, 39, 38, 20, 15, 18, 16, 14, 19, 35, 33, 32, 5, 2, 0))
-    # chemins.append((0, 4, 3, 44, 48, 45, 47, 49, 21, 27, 23, 25, 24, 22, 26, 42, 40, 42, 26, 21, 49, 45, 44, 3, 1, 0))
-    # chemins.append((0, 1, 6, 28, 30, 31, 29, 13, 7, 11, 8, 10, 12, 9, 12, 41, 43, 42, 26, 21, 49, 47, 46, 44, 3, 1, 0))
-    
-    if algorithm == "Chemin":
-        chemins = generate_path()
+    chemins = []
+
+    if algorithm == "ACO":
+        chemins = generate_path(num_agents)
 
     for i in range(num_agents):
         position_queue = multiprocessing.Queue()
@@ -50,7 +47,7 @@ if __name__ == '__main__':
             agent = multiprocessing.Process(target=agent_process_random, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock,stop_simulation))
         elif algorithm == "Runtime":
             agent = multiprocessing.Process(target=agent_process_runtime, args=(i, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
-        elif algorithm == "Chemin":
+        elif algorithm == "ACO":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i, position_queue, chemins[i], last_visited_shared,stop_simulation))
         agents.append(agent)    
         agent.start()

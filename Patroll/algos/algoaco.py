@@ -3,7 +3,7 @@ from tqdm import tqdm
 import numpy as np
 import networkx as nx
 
-num_agents = 3
+
 # ALGORITHME ACO
 def initialize_pheromones(num_cities, tau_0=1.0):
     """Initialise la matrice de phéromones."""
@@ -34,7 +34,7 @@ def select_next_city(current_city, allowed_cities, pheromones, visibility, alpha
     probs = np.array(probs) / sum(probs)  # Normalisation
     return np.random.choice(allowed_cities_accessible, p=probs)
 
-def construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph):
+def construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph,num_agents):
     """Construit un chemin pour une fourmi en partant du nœud spécifié."""
     solution = [[start_node] for _ in range(num_agents)]
     allowed_cities = [c for c in range(num_cities)]
@@ -53,7 +53,7 @@ def construct_solution(num_cities, distance_matrix, pheromones, visibility, alph
         chemin_individuel.append(start_node) # Retour au nœud de départ
     return solution 
 
-def update_pheromones(pheromones, solutions, distances, rho, Q):
+def update_pheromones(pheromones, solutions, distances, rho, Q,num_agents):
     """Met à jour la matrice de phéromones."""
     pheromones *= (1 - rho)  # Évaporation
     for solution in solutions:
@@ -67,7 +67,7 @@ def update_pheromones(pheromones, solutions, distances, rho, Q):
                 pheromones[solution[j][i], solution[j][i + 1]] += Q / path_length
     return pheromones
 
-def aco_tsp(distance_matrix, start_node, graph, num_ants=100, num_iterations=100, alpha=1.0, beta=2.0, rho=0.5, Q=100):
+def aco_tsp(distance_matrix, start_node, graph, num_agents, num_ants=100, num_iterations=100, alpha=1.0, beta=2.0, rho=0.5, Q=100):
     """Algorithme principal ACO pour le TSP."""
     num_cities = distance_matrix.shape[0]
     pheromones = initialize_pheromones(num_cities)
@@ -78,7 +78,7 @@ def aco_tsp(distance_matrix, start_node, graph, num_ants=100, num_iterations=100
     for _ in tqdm(range(num_iterations), desc="Optimizing"):
         solutions = []
         for _ in range(num_ants):
-            solution = construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph)
+            solution = construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph,num_agents)
             solutions.append(solution)
 
         for solution in solutions:
@@ -90,7 +90,7 @@ def aco_tsp(distance_matrix, start_node, graph, num_ants=100, num_iterations=100
             if path_length < best_length:
                 best_solution, best_length = solution, path_length
 
-        pheromones = update_pheromones(pheromones, solutions, distance_matrix, rho, Q)
+        pheromones = update_pheromones(pheromones, solutions, distance_matrix, rho, Q,num_agents)
 
     return best_solution, best_length
 
@@ -166,11 +166,11 @@ def compute_weighted_distance_matrix(graph):
     return distance_matrix
 
 # Renvoie le chemin de l'ACO commencant au noeud 0
-def generate_path():
+def generate_path(num_agents):
     graph = build_weighted_graph(nodes_position, edges)
     distance_matrix = compute_weighted_distance_matrix(graph)
     
-    path, best_lenth=aco_tsp(distance_matrix, 0, graph)
+    path, best_lenth=aco_tsp(distance_matrix, 0, graph,num_agents)
     for i in range(len(path)):
         is_valid = validate_path(graph, path[i])
         if not is_valid:
