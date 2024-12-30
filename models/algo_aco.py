@@ -119,5 +119,5 @@ def generate_path():
     return all_path
 
 
-test = generate_path()
+test = generate_path_with_genetic()
 print(test)

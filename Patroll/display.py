@@ -1,10 +1,10 @@
 import pygame
 import time
-from graphstructure import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import pygame
 import numpy as np
+from Map import maps
 
 # Constantes utilisées pour l'affichage
 WIDTH, HEIGHT = 750, 520
@@ -43,50 +43,40 @@ CHEMIN_BUTTON = pygame.Rect(
 # Boutons pour le choix du nombre d'agents (au milieu à droite)
 button_width, button_height = 40, 40
 center_right_x = WIDTH - 150  # Décalage du bord droit
-center_y = HEIGHT // 2
+center_y_button = HEIGHT // 2
 
-MINUS_BUTTON = pygame.Rect(center_right_x - button_width - 20, center_y - 25, button_width, button_height)
-PLUS_BUTTON = pygame.Rect(center_right_x + 20, center_y - 25, button_width, button_height)
-
-
-# Dimensions de la fenêtre
-min_x = min(node[0] for node in nodes_position)
-max_x = max(node[0] for node in nodes_position)
-min_y = min(node[1] for node in nodes_position)
-max_y = max(node[1] for node in nodes_position)
-
-# Dimensions de la carte
-map_width = max_x - min_x
-map_height = max_y - min_y
-
-# Calculer un facteur de mise à l'échelle pour que la carte prenne presque toute la fenêtre
-scale_factor = min(WIDTH / map_width, HEIGHT / map_height) * 0.9  # Le *0.9 rend la carte un peu plus petite
-
-# Nouvelle taille de la carte après mise à l'échelle
-scaled_map_width = map_width * scale_factor
-scaled_map_height = map_height * scale_factor
-
-# Calculer le centre de la carte (en coordonnées locales)
-center_x = min_x + map_width / 2
-center_y = min_y + map_height / 2
-
-# Calculer le centre de la carte après mise à l'échelle (en pixels)
-center_x_scaled = center_x * scale_factor
-center_y_scaled = center_y * scale_factor
-
-# Offsets pour centrer la carte dans la fenêtre
-offset_x = WIDTH / 2 - center_x_scaled
-offset_y = HEIGHT / 2 - center_y_scaled
+MINUS_BUTTON = pygame.Rect(center_right_x - button_width - 20, center_y_button - 25, button_width, button_height)
+PLUS_BUTTON = pygame.Rect(center_right_x + 20, center_y_button - 25, button_width, button_height)
 
 
-# Appliquer les offsets et la mise à l'échelle
-nodes_position = [(min_x + (x - min_x) * scale_factor + offset_x, 
-                   min_y + (y - min_y) * scale_factor + offset_y) 
-                  for x, y in nodes_position]
+def scaling_nodes_position(nodes_position):
+# Calculer les dimensions de la carte d'origine
+    min_x = min(node[0] for node in nodes_position)
+    max_x = max(node[0] for node in nodes_position)
+    min_y = min(node[1] for node in nodes_position)
+    max_y = max(node[1] for node in nodes_position)
+
+    map_width = max_x - min_x
+    map_height = max_y - min_y
+
+    # Calculer le facteur d'échelle pour ajuster la carte à la fenêtre
+    scale_factor = min(WIDTH / map_width, HEIGHT / map_height) * 0.9  # Ajustement à 90% pour éviter le dépassement
+
+    # Calculer les offsets pour centrer la carte après mise à l'échelle
+    offset_x = (WIDTH - map_width * scale_factor) / 2
+    offset_y = (HEIGHT - map_height * scale_factor) / 2
+
+    # Appliquer les offsets et la mise à l'échelle aux positions des nœuds
+    nodes_position = [
+        ((x - min_x) * scale_factor + offset_x,
+        (y - min_y) * scale_factor + offset_y)
+        for x, y in nodes_position
+    ]
+    return nodes_position
 
 def display_menu(screen):
     # Nombre d'agents (initialement 1)
-    num_agents = 1
+    num_agents = 3
 
     # Charger l'image de fond
     try:
@@ -100,6 +90,12 @@ def display_menu(screen):
     font_title = pygame.font.Font(None, 50)
     font_button = pygame.font.Font(None, 40)
     font_label = pygame.font.Font(None, 35)
+    font_dropdown = pygame.font.Font(None, 30)
+
+    # Options des cartes
+    listmap = list(maps.keys())
+    dropdown_open = False
+    selected_map_index = 0
 
     running = True
     while running:
@@ -108,7 +104,7 @@ def display_menu(screen):
         screen.blit(background, (0, 0))
 
         # Titre
-        title = font_title.render("Choisissez un algorithme :", True, BLACK)
+        title = font_title.render("Choisissez une carte et un algorithme :", True, BLACK)
         title_rect = title.get_rect(center=(WIDTH // 2, 50))
         screen.blit(title, title_rect)
 
@@ -117,34 +113,48 @@ def display_menu(screen):
         pygame.draw.rect(screen, LIGHT_BLUE, RUNTIME_BUTTON)
         pygame.draw.rect(screen, LIGHT_BLUE, CHEMIN_BUTTON)
 
-        # Texte des boutons
+        # Texte des boutons pour les algorithmes
         random_text = font_button.render("Random", True, BLACK)
         runtime_text = font_button.render("Runtime", True, BLACK)
         chemin_text = font_button.render("ACO", True, BLACK)
 
-        # Positionnement du texte
+        # Positionnement du texte pour les algorithmes
         screen.blit(random_text, random_text.get_rect(center=RANDOM_BUTTON.center))
         screen.blit(runtime_text, runtime_text.get_rect(center=RUNTIME_BUTTON.center))
         screen.blit(chemin_text, chemin_text.get_rect(center=CHEMIN_BUTTON.center))
 
         # Section choix du nombre d'agents (au milieu à droite)
         label_text = font_label.render("Nombre d'agents", True, BLACK)
-        label_rect = label_text.get_rect(center=(center_right_x, center_y - 75))  # Texte au-dessus du nombre
+        label_rect = label_text.get_rect(center=(center_right_x, center_y_button - 75))  # Texte au-dessus du nombre
         screen.blit(label_text, label_rect)
 
         agents_text = font_label.render(f"{num_agents}", True, BLACK)
-        agents_rect = agents_text.get_rect(center=(center_right_x, center_y - 40))  # Nombre juste au-dessus des boutons
+        agents_rect = agents_text.get_rect(center=(center_right_x, center_y_button - 45))  # Nombre juste au-dessus des boutons
         screen.blit(agents_text, agents_rect)
 
         # Boutons + et -
         pygame.draw.rect(screen, DARK_BLUE, MINUS_BUTTON)
         pygame.draw.rect(screen, DARK_BLUE, PLUS_BUTTON)
 
-        # Texte des boutons
+        # Texte des boutons + et -
         minus_text = font_button.render("-", True, WHITE)
         plus_text = font_button.render("+", True, WHITE)
         screen.blit(minus_text, minus_text.get_rect(center=MINUS_BUTTON.center))
         screen.blit(plus_text, plus_text.get_rect(center=PLUS_BUTTON.center))
+
+        # Zone de la liste déroulante (au-dessus du centre gauche)
+        dropdown_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 85, 200, 40)
+        pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
+        selected_map_text = font_dropdown.render(listmap[selected_map_index], True, BLACK)
+        screen.blit(selected_map_text, selected_map_text.get_rect(center=dropdown_rect.center))
+
+        # Afficher les options si la liste est ouverte
+        if dropdown_open:
+            for i, map_name in enumerate(listmap):
+                option_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 45 + i * 40, 200, 40)
+                pygame.draw.rect(screen, DARK_BLUE if i == selected_map_index else LIGHT_BLUE, option_rect)
+                option_text = font_dropdown.render(map_name, True, BLACK)
+                screen.blit(option_text, option_text.get_rect(center=option_rect.center))
 
         # Rafraîchir l'affichage
         pygame.display.flip()
@@ -153,17 +163,28 @@ def display_menu(screen):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return None, None
+                return None, None, None
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
 
+                # Gestion de la liste déroulante
+                if dropdown_rect.collidepoint(mouse_pos):
+                    dropdown_open = not dropdown_open
+                elif dropdown_open:
+                    for i, map_name in enumerate(listmap):
+                        option_rect = pygame.Rect(WIDTH // 4 - 100, HEIGHT // 2 - 40 + i * 40, 200, 40)
+                        if option_rect.collidepoint(mouse_pos):
+                            selected_map_index = i
+                            dropdown_open = False
+                            break
+
                 # Détection des clics sur les boutons d'algorithmes
-                if RANDOM_BUTTON.collidepoint(mouse_pos):
-                    return "Random", num_agents
+                elif RANDOM_BUTTON.collidepoint(mouse_pos):
+                    return listmap[selected_map_index], "Random", num_agents
                 elif RUNTIME_BUTTON.collidepoint(mouse_pos):
-                    return "Runtime", num_agents
+                    return listmap[selected_map_index], "Runtime", num_agents
                 elif CHEMIN_BUTTON.collidepoint(mouse_pos):
-                    return "ACO", num_agents
+                    return listmap[selected_map_index], "ACO", num_agents
 
                 # Détection des clics sur les boutons "+" et "-"
                 elif MINUS_BUTTON.collidepoint(mouse_pos) and num_agents > 1:
@@ -172,18 +193,14 @@ def display_menu(screen):
                     num_agents += 1
 
 
-def calculate_node_color(last_visit_time):
-    if last_visit_time is None:
-        # Nœud jamais visité, il reste rouge
-        return IDLE_COLOR
 
-    elapsed_time = time.time() - last_visit_time
-    # Interpole entre vert et rouge en fonction du temps depuis la dernière visite
-    red_intensity = min(255, int(255 * elapsed_time / 20))  # 20 secondes pour atteindre le rouge complet
-    green_intensity = max(0, 255 - red_intensity)
-    return (red_intensity, green_intensity, 0)
+
+
+
+
 
 def display_graph(screen, FONT, nodes_position, edges, last_visited_shared,num_agents,position_queues,agent_positions):
+    
     screen.fill((255, 255, 255))
 
     # Dessiner les arêtes
@@ -296,4 +313,29 @@ def end_simulation(screen, FONT, final_average_idleness, agents, idleness_data):
 
     pygame.quit()
 
+def calculate_node_color(last_visit_time):
+    if last_visit_time is None:
+        # Nœud jamais visité, il reste rouge
+        return IDLE_COLOR
 
+    elapsed_time = time.time() - last_visit_time
+    # Interpole entre vert et rouge en fonction du temps depuis la dernière visite
+    red_intensity = min(255, int(255 * elapsed_time / 20))  # 20 secondes pour atteindre le rouge complet
+    green_intensity = max(0, 255 - red_intensity)
+    return (red_intensity, green_intensity, 0)
+
+def calculate_average_idleness(last_visited):
+    total_idleness = 0
+    node_count = 0
+
+    current_time = time.time()
+
+    for node, last_visit_time in last_visited.items():
+        if last_visit_time is not None:
+            total_idleness += current_time - last_visit_time
+        else:
+            # Si un nœud n'a jamais été visité, on peut définir une valeur par défaut (par exemple, 0 ou un grand nombre)
+            total_idleness += 20  # Exemple : Oisiveté maximale par défaut
+        node_count += 1
+
+    return total_idleness / node_count if node_count > 0 else 0

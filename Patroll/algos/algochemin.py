@@ -1,21 +1,15 @@
 import random
 import math
 import time
-from graphstructure import *  # Assurez-vous que nodes et edges sont définis dans graphstructure
 from display import *
 from collections import deque  # Pour BFS
 FPS = 30
-
 agent_speed = 5
 
-# Informations récupérées depuis graphstructure
-adjacency_list = {i: [] for i in range(len(nodes_position))}
-for a, b in edges:
-    adjacency_list[a].append(b)
-    adjacency_list[b].append(a)
+
 
 # Fonction de déplacement de l'agent avec chemin donné
-def agent_process_chemins(agent_id, position_queue, chemin, last_visited_shared,stop_simulation):
+def agent_process_chemins(agent_id, nodes_position, position_queue, chemin, last_visited_shared,stop_simulation):
     agent_position = nodes_position[chemin[0]]
     agent_target_position = nodes_position[chemin[1]]
     agent_node_index = chemin[0]

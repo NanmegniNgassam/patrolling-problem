@@ -2,13 +2,11 @@
 import pygame
 import multiprocessing
 import time
-from graphstructure import *  # Assurez-vous que nodes et edges sont définis dans graphstructure
 from display import *
 from algos.algorandom import *
 from algos.algoruntime import *
 from algos.algochemin import *
 from algos.algoaco import generate_path
-
 
 if __name__ == '__main__':
     # Initialisation de pygame
@@ -16,13 +14,21 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Agent - Graph Simulation")
     clock = pygame.time.Clock()
-    font_size = 12
-    FONT = pygame.font.Font(None, font_size)  
-    algorithm, num_agents = display_menu(screen)
+    FONT = pygame.font.Font(None, 12)  
+
+    selected_map, algorithm, num_agents = display_menu(screen)
+    print(selected_map)
+    if selected_map in maps:
+        print("avant",maps[selected_map]["nodes"])
+        nodes_position = scaling_nodes_position(maps[selected_map]["nodes"])
+        print("apres",nodes_position)
+        edges = maps[selected_map]["edges"]
+        print("edges",edges)
 
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
     last_visited_shared = manager.dict({i: None for i in range(len(nodes_position))})
+    
     # Create a shared list with three elements
     shared_list_next_node = manager.list([0] * num_agents)  # Shared list initialized to [0, 0, 0]
     shared_list_chemins = manager.list([None] * num_agents)
@@ -38,17 +44,17 @@ if __name__ == '__main__':
     chemins = []
 
     if algorithm == "ACO":
-        chemins = generate_path(num_agents)
+        chemins = generate_path(num_agents,nodes_position,edges)
 
     for i in range(num_agents):
         position_queue = multiprocessing.Queue()
         position_queues.append(position_queue)
         if algorithm == "Random":
-            agent = multiprocessing.Process(target=agent_process_random, args=(i, position_queue, last_visited_shared, shared_list_next_node, lock,stop_simulation))
+            agent = multiprocessing.Process(target=agent_process_random, args=(i, nodes_position, edges, position_queue, last_visited_shared, shared_list_next_node, lock,stop_simulation))
         elif algorithm == "Runtime":
-            agent = multiprocessing.Process(target=agent_process_runtime, args=(i, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
+            agent = multiprocessing.Process(target=agent_process_runtime, args=(i,nodes_position,edges, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
         elif algorithm == "ACO":
-            agent = multiprocessing.Process(target=agent_process_chemins, args=(i, position_queue, chemins[i], last_visited_shared,stop_simulation))
+            agent = multiprocessing.Process(target=agent_process_chemins, args=(i, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
         agents.append(agent)    
         agent.start()
 

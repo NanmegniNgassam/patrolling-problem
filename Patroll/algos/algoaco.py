@@ -1,4 +1,3 @@
-from graphstructure import *
 from tqdm import tqdm
 import numpy as np
 import networkx as nx
@@ -166,7 +165,7 @@ def compute_weighted_distance_matrix(graph):
     return distance_matrix
 
 # Renvoie le chemin de l'ACO commencant au noeud 0
-def generate_path(num_agents):
+def generate_path(num_agents,nodes_position, edges):
     graph = build_weighted_graph(nodes_position, edges)
     distance_matrix = compute_weighted_distance_matrix(graph)
     

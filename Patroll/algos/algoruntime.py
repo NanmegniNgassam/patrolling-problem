@@ -2,18 +2,13 @@
 import random
 import math
 import time
-from graphstructure import *  # Assurez-vous que nodes et edges sont définis dans graphstructure
 from display import *
 
 agent_speed = 5
 FPS = 30
 
 
-# Informations récupérées depuis graphstructure
-adjacency_list = {i: [] for i in range(len(nodes_position))}
-for a, b in edges:
-    adjacency_list[a].append(b)
-    adjacency_list[b].append(a)
+
 
 def shortest_path(graph, start, end):
     import heapq
@@ -36,8 +31,14 @@ def shortest_path(graph, start, end):
     
     return []  # Aucun chemin trouvé
 
-def agent_process_runtime(agent_id,num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
+def agent_process_runtime(agent_id,nodes_position, edges, num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
     
+    # Informations récupérées depuis graphstructure
+    adjacency_list = {i: [] for i in range(len(nodes_position))}
+    for a, b in edges:
+        adjacency_list[a].append(b)
+        adjacency_list[b].append(a)
+
     agent_position = nodes_position[0]  # Position initiale
     agent_target_position = nodes_position[1]  # Première cible
     agent_node_index = 0
