@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import pygame
 import numpy as np
-from Map import maps
+from config import maps
 
 # Constantes utilisées pour l'affichage
 WIDTH, HEIGHT = 750, 520

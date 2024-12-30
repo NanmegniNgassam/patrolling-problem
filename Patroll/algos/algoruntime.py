@@ -3,10 +3,7 @@ import random
 import math
 import time
 from display import *
-
-agent_speed = 5
-FPS = 30
-
+from config import agent_speed, FPS
 
 
 
@@ -62,7 +59,7 @@ def agent_process_runtime(agent_id,nodes_position, edges, num_agents, position_q
 
             # Décision cognitive : vérifier si on doit aller vers un nœud éloigné avec grande oisiveté
             if not shared_list_chemins[agent_id] and num_agents != 1:  # Si l'agent n'a pas encore de chemin à suivre
-                if random.random() < 0.03: 
+                if random.random() < 0.04: 
                     with lock:
                         # Calculer le nœud avec la plus grande oisiveté
                         max_idleness_node = max(
@@ -105,7 +102,7 @@ def agent_process_runtime(agent_id,nodes_position, edges, num_agents, position_q
                         closest_distance = math.hypot(nodes_position[max_idleness_node][0] - my_x,
                                                     nodes_position[max_idleness_node][1] - my_y)
                         #print("distance,", closest_distance)
-                        for other_agent_id in range(num_agents):
+                        for other_agent_id in range(agent_id):
                             if other_agent_id != agent_id:
                                 other_agent_position = agent_positions[other_agent_id]
                                 other_x, other_y = other_agent_position

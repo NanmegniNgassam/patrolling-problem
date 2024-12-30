@@ -3,12 +3,7 @@ import math
 import time
 import heapq
 from display import *
-from collections import deque  # Pour BFS
-FPS = 30
-
-agent_speed = 5
-
-# Informations récupérées depuis graphstructure
+from config import agent_speed, FPS
 
 
 
@@ -45,7 +40,7 @@ def a_star_shortest_path(nodes_position, edges, start, goal):
 
 
 # Fonction de déplacement de l'agent avec chemin donné
-def agent_process_random(agent_id, nodes_position, edges, position_queue, last_visited_shared, shared_list_next_node, lock,stop_simulation):
+def agent_process_random(agent_id, nodes_position, edges, position_queue, last_visited_shared, lock,stop_simulation):
     agent_position = nodes_position[0]
     agent_node_index = 0
     path = []  # Chemin que l'agent doit suivre
@@ -74,12 +69,13 @@ def agent_process_random(agent_id, nodes_position, edges, position_queue, last_v
         if distance < agent_speed:
             agent_node_index = next_node_index
             path_index += 1  # Passer au prochain nœud dans le chemin
-            last_visited_shared[agent_node_index] = time.time()
+            with lock:
+                last_visited_shared[agent_node_index] = time.time()
 
         # Déplacer l'agent vers le nœud cible actuel
         else:
             angle = math.atan2(dy, dx)
             agent_position = (x1 + agent_speed * math.cos(angle), y1 + agent_speed * math.sin(angle))
-
-        position_queue.put(agent_position)
+        with lock:
+            position_queue.put(agent_position)
         time.sleep(1 / FPS)

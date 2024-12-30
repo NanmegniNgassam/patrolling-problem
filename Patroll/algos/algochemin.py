@@ -3,8 +3,7 @@ import math
 import time
 from display import *
 from collections import deque  # Pour BFS
-FPS = 30
-agent_speed = 5
+from config import agent_speed, FPS
 
 
 

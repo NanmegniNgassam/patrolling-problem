@@ -1,3 +1,5 @@
+agent_speed = 5
+FPS = 30
 
 maps = {
     "Island": {
