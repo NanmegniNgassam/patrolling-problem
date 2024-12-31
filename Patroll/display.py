@@ -5,7 +5,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import pygame
 import numpy as np
 from config import maps
-
+from algos.algoaco import generate_path
 # Constantes utilisées pour l'affichage
 WIDTH, HEIGHT = 750, 520
 NODE_RADIUS = 10
@@ -75,12 +75,12 @@ def scaling_nodes_position(nodes_position):
     return nodes_position
 
 def display_menu(screen):
-    # Nombre d'agents (initialement 1)
+    # Nombre d'agents (initialement 3)
     num_agents = 3
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\Patroll\image0.jpg")
+        background = pygame.image.load("patrolling-problem\\Patroll\\image0.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -91,6 +91,7 @@ def display_menu(screen):
     font_button = pygame.font.Font(None, 40)
     font_label = pygame.font.Font(None, 35)
     font_dropdown = pygame.font.Font(None, 30)
+    font_waiting = pygame.font.Font(None, 50)
 
     # Options des cartes
     listmap = list(maps.keys())
@@ -98,6 +99,7 @@ def display_menu(screen):
     selected_map_index = 0
 
     running = True
+    chemins = None  # Variable pour stocker les chemins générés
     while running:
         # Effacer l'écran et afficher l'arrière-plan
         screen.fill(WHITE)
@@ -116,39 +118,36 @@ def display_menu(screen):
         # Texte des boutons pour les algorithmes
         random_text = font_button.render("Random", True, BLACK)
         runtime_text = font_button.render("Runtime", True, BLACK)
-        chemin_text = font_button.render("ACO", True, BLACK)
+        chemin_text = font_button.render("Multi-ACO", True, BLACK)
 
         # Positionnement du texte pour les algorithmes
         screen.blit(random_text, random_text.get_rect(center=RANDOM_BUTTON.center))
         screen.blit(runtime_text, runtime_text.get_rect(center=RUNTIME_BUTTON.center))
         screen.blit(chemin_text, chemin_text.get_rect(center=CHEMIN_BUTTON.center))
 
-        # Section choix du nombre d'agents (au milieu à droite)
+        # Section choix du nombre d'agents
         label_text = font_label.render("Nombre d'agents", True, BLACK)
-        label_rect = label_text.get_rect(center=(center_right_x, center_y_button - 75))  # Texte au-dessus du nombre
+        label_rect = label_text.get_rect(center=(WIDTH - 150, HEIGHT // 2 - 75))
         screen.blit(label_text, label_rect)
 
         agents_text = font_label.render(f"{num_agents}", True, BLACK)
-        agents_rect = agents_text.get_rect(center=(center_right_x, center_y_button - 45))  # Nombre juste au-dessus des boutons
+        agents_rect = agents_text.get_rect(center=(WIDTH - 150, HEIGHT // 2 - 45))
         screen.blit(agents_text, agents_rect)
 
         # Boutons + et -
         pygame.draw.rect(screen, DARK_BLUE, MINUS_BUTTON)
         pygame.draw.rect(screen, DARK_BLUE, PLUS_BUTTON)
-
-        # Texte des boutons + et -
         minus_text = font_button.render("-", True, WHITE)
         plus_text = font_button.render("+", True, WHITE)
         screen.blit(minus_text, minus_text.get_rect(center=MINUS_BUTTON.center))
         screen.blit(plus_text, plus_text.get_rect(center=PLUS_BUTTON.center))
 
-        # Zone de la liste déroulante (au-dessus du centre gauche)
+        # Liste déroulante
         dropdown_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 85, 200, 40)
         pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
         selected_map_text = font_dropdown.render(listmap[selected_map_index], True, BLACK)
         screen.blit(selected_map_text, selected_map_text.get_rect(center=dropdown_rect.center))
 
-        # Afficher les options si la liste est ouverte
         if dropdown_open:
             for i, map_name in enumerate(listmap):
                 option_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 45 + i * 40, 200, 40)
@@ -156,10 +155,8 @@ def display_menu(screen):
                 option_text = font_dropdown.render(map_name, True, BLACK)
                 screen.blit(option_text, option_text.get_rect(center=option_rect.center))
 
-        # Rafraîchir l'affichage
         pygame.display.flip()
 
-        # Gestion des événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -167,30 +164,40 @@ def display_menu(screen):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
 
-                # Gestion de la liste déroulante
                 if dropdown_rect.collidepoint(mouse_pos):
                     dropdown_open = not dropdown_open
                 elif dropdown_open:
                     for i, map_name in enumerate(listmap):
-                        option_rect = pygame.Rect(WIDTH // 4 - 100, HEIGHT // 2 - 40 + i * 40, 200, 40)
+                        option_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 45 + i * 40, 200, 40)
                         if option_rect.collidepoint(mouse_pos):
                             selected_map_index = i
                             dropdown_open = False
                             break
 
-                # Détection des clics sur les boutons d'algorithmes
                 elif RANDOM_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "Random", num_agents
+                    return listmap[selected_map_index], "Random", num_agents, None
                 elif RUNTIME_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "Runtime", num_agents
+                    return listmap[selected_map_index], "Runtime", num_agents, None
                 elif CHEMIN_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "ACO", num_agents
+                    # Afficher un écran d'attente
+                    screen.fill(WHITE)
+                    waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
+                    waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                    screen.blit(waiting_text, waiting_rect)
+                    pygame.display.flip()
 
-                # Détection des clics sur les boutons "+" et "-"
+                    # Générer les chemins
+                    nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
+                    edges = maps[listmap[selected_map_index]]["edges"]
+                    chemins = generate_path(num_agents, nodes_position, edges)
+
+                    return listmap[selected_map_index], "ACO", num_agents, chemins
+
                 elif MINUS_BUTTON.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
                 elif PLUS_BUTTON.collidepoint(mouse_pos) and num_agents < 5:
                     num_agents += 1
+
 
 
 

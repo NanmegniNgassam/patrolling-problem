@@ -16,10 +16,10 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     FONT = pygame.font.Font(None, 12)  
 
-    selected_map, algorithm, num_agents = display_menu(screen)
+    selected_map, algorithm, num_agents, chemins = display_menu(screen)
     if selected_map in maps:
-        nodes_position = scaling_nodes_position(maps[selected_map]["nodes"])
-        edges = maps[selected_map]["edges"]
+         nodes_position = scaling_nodes_position(maps[selected_map]["nodes"])
+         edges = maps[selected_map]["edges"]
 
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
@@ -37,10 +37,10 @@ if __name__ == '__main__':
     agent_positions = manager.list([initial_node] * num_agents)
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen
-    chemins = []
-
-    if algorithm == "ACO":
-        chemins = generate_path(num_agents,nodes_position,edges)
+    
+    # chemins = []
+    # if algorithm == "ACO":
+    #     chemins = generate_path(num_agents,nodes_position,edges)
 
     for i in range(num_agents):
         position_queue = multiprocessing.Queue()
