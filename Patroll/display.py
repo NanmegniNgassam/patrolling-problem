@@ -6,6 +6,8 @@ import pygame
 import numpy as np
 from config import maps
 from algos.algoaco import generate_path
+from algos.algoacoclustering import generate_path_cluster_monobase, generate_path_cluster_multibase
+
 # Constantes utilisées pour l'affichage
 WIDTH, HEIGHT = 750, 520
 NODE_RADIUS = 10
@@ -39,6 +41,12 @@ CHEMIN_BUTTON = pygame.Rect(
     BUTTON_WIDTH,
     BUTTON_HEIGHT,
 )
+MULTIBASE_BUTTON = pygame.Rect(
+    (WIDTH - BUTTON_WIDTH) // 2,
+    (HEIGHT - BUTTON_HEIGHT) // 2 - 100,
+    BUTTON_WIDTH,
+    BUTTON_HEIGHT,
+)
 
 # Boutons pour le choix du nombre d'agents (au milieu à droite)
 button_width, button_height = 40, 40
@@ -47,6 +55,9 @@ center_y_button = HEIGHT // 2
 
 MINUS_BUTTON = pygame.Rect(center_right_x - button_width - 20, center_y_button - 25, button_width, button_height)
 PLUS_BUTTON = pygame.Rect(center_right_x + 20, center_y_button - 25, button_width, button_height)
+
+MINUS_BUTTON_LOOP = pygame.Rect(center_right_x - button_width - 20, center_y_button - 10, button_width, button_height)
+PLUS_BUTTON_LOOP = pygame.Rect(center_right_x + 20, center_y_button - 10, button_width, button_height)
 
 
 def scaling_nodes_position(nodes_position):
@@ -77,10 +88,12 @@ def scaling_nodes_position(nodes_position):
 def display_menu(screen):
     # Nombre d'agents (initialement 3)
     num_agents = 3
+    num_loop = 5
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -117,16 +130,19 @@ def display_menu(screen):
         pygame.draw.rect(screen, LIGHT_BLUE, RANDOM_BUTTON)
         pygame.draw.rect(screen, LIGHT_BLUE, RUNTIME_BUTTON)
         pygame.draw.rect(screen, LIGHT_BLUE, CHEMIN_BUTTON)
+        pygame.draw.rect(screen, LIGHT_BLUE, MULTIBASE_BUTTON)
 
         # Texte des boutons pour les algorithmes
         random_text = font_button.render("Random", True, BLACK)
         runtime_text = font_button.render("Runtime", True, BLACK)
         chemin_text = font_button.render("Multi-ACO", True, BLACK)
+        multibase_text = font_button.render("Multibase", True, BLACK)
 
         # Positionnement du texte pour les algorithmes
         screen.blit(random_text, random_text.get_rect(center=RANDOM_BUTTON.center))
         screen.blit(runtime_text, runtime_text.get_rect(center=RUNTIME_BUTTON.center))
         screen.blit(chemin_text, chemin_text.get_rect(center=CHEMIN_BUTTON.center))
+        screen.blit(multibase_text, multibase_text.get_rect(center=MULTIBASE_BUTTON.center))
 
         # Section choix du nombre d'agents (ajustée vers le haut)
         label_text = font_label.render("Nombre d'agents", True, BLACK)
@@ -137,12 +153,28 @@ def display_menu(screen):
         agents_rect = agents_text.get_rect(center=(150, HEIGHT // 2 + 5))  # Inchangé
         screen.blit(agents_text, agents_rect)
 
+        # Section choix du nombre d'agents (ajustée vers le haut)
+        label_text_loops = font_label.render("Nombre de patrouille", True, BLACK)
+        label_rect_loops = label_text_loops.get_rect(center=(150, HEIGHT // 2 - 140))  # Remonté pour être bien au-dessus
+        screen.blit(label_text_loops, label_rect_loops)
+
+        loops_text = font_label.render(f"{num_loop}", True, BLACK)
+        loops_rect = loops_text.get_rect(center=(150, HEIGHT // 2 - 100))  # Position pour aligner avec les boutons
+        screen.blit(loops_text, loops_rect)
+
         # Boutons + et - (remontés de 10 pixels)
-        minus_button_rect = pygame.Rect(90, HEIGHT // 2 + 25, 40, 40)  # Bouton "-" ajusté
-        plus_button_rect = pygame.Rect(170, HEIGHT // 2 + 25, 40, 40)  # Bouton "+" ajusté
+        minus_button_rect = pygame.Rect(90, HEIGHT // 2 - 15, 40, 40)  # Bouton "-" ajusté
+        plus_button_rect = pygame.Rect(170, HEIGHT // 2 - 15, 40, 40)  # Bouton "+" ajusté
+
+        # Boutons + et - (remontés de 10 pixels)
+        minus_button_loop = pygame.Rect(90, HEIGHT // 2 - 120, 40, 40)  # Bouton "-" ajusté
+        plus_button_loop = pygame.Rect(170, HEIGHT // 2 - 120, 40, 40)  # Bouton "+" ajusté
 
         pygame.draw.rect(screen, DARK_BLUE, minus_button_rect)
         pygame.draw.rect(screen, DARK_BLUE, plus_button_rect)
+
+        pygame.draw.rect(screen, DARK_BLUE, minus_button_loop)
+        pygame.draw.rect(screen, DARK_BLUE, plus_button_loop)
 
         # Texte des boutons
         minus_text = font_button.render("-", True, WHITE)
@@ -151,6 +183,8 @@ def display_menu(screen):
         screen.blit(minus_text, minus_text.get_rect(center=minus_button_rect.center))
         screen.blit(plus_text, plus_text.get_rect(center=plus_button_rect.center))
 
+        screen.blit(minus_text, minus_text.get_rect(center=minus_button_loop.center))
+        screen.blit(plus_text, plus_text.get_rect(center=plus_button_loop.center))
         # Menu déroulant map (placé à droite)
         dropdown_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45, 200, 40)  # Nouvelle position à droite
         pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
@@ -206,14 +240,37 @@ def display_menu(screen):
                     # Générer les chemins
                     nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
                     edges = maps[listmap[selected_map_index]]["edges"]
-                    chemins = generate_path(num_agents, nodes_position, edges)
+                    if num_agents ==1:
+                        chemins = generate_path(num_agents, nodes_position, edges)
+                    else:
+                        chemins = generate_path_cluster_monobase(num_agents,nodes_position,edges,num_loop)
+                        print("Les agents vont effectuer ce nombre de rond avant de rentrer à la caserne:", num_loop)
 
                     return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
+                
+                elif MULTIBASE_BUTTON.collidepoint(mouse_pos):
+                    # Afficher un écran d'attente
+                    screen.fill(WHITE)
+                    waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
+                    waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                    screen.blit(waiting_text, waiting_rect)
+                    pygame.display.flip()
+
+                    # Générer les chemins
+                    nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
+                    edges = maps[listmap[selected_map_index]]["edges"]
+                    chemins = generate_path_cluster_multibase(num_agents,nodes_position,edges)
+
+                    return listmap[selected_map_index], "Multibase", num_agents, chemins, weather_options[selected_weather_index]
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
                 elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 5:
                     num_agents += 1
+                elif minus_button_loop.collidepoint(mouse_pos) and num_loop > 2:
+                    num_loop -= 1
+                elif plus_button_loop.collidepoint(mouse_pos) and num_loop < 10:
+                    num_loop += 1
 
 
 

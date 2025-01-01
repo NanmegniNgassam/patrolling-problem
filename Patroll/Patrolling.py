@@ -7,6 +7,7 @@ from algos.algorandom import *
 from algos.algoruntime import *
 from algos.algochemin import *
 from algos.algoaco import generate_path
+from algos.algoacoclustering import *
 
 def modify_nodes_with_costs(nodes, increase_factor_range=(1.05, 1.2), percentage=0.2):
     """
@@ -52,6 +53,10 @@ if __name__ == '__main__':
         nodes_position = scaling_nodes_position(modify_nodes_with_costs(nodes_position))
         agent_speed = 4
 
+    #chemins = []
+    #if algorithm == "ACO":
+    #    chemins = generate_path_cluster_monobase(num_agents,nodes_position,edges)
+
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
     last_visited_shared = manager.dict({i: None for i in range(len(nodes_position))})
@@ -69,9 +74,6 @@ if __name__ == '__main__':
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen
     
-    # chemins = []
-    # if algorithm == "ACO":
-    #     chemins = generate_path(num_agents,nodes_position,edges)
 
     for i in range(num_agents):
         position_queue = multiprocessing.Queue()
@@ -81,6 +83,8 @@ if __name__ == '__main__':
         elif algorithm == "Runtime":
             agent = multiprocessing.Process(target=agent_process_runtime, args=(i,agent_speed,nodes_position,edges, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
         elif algorithm == "ACO":
+            agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
+        elif algorithm == "Multibase":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
         agents.append(agent)    
         agent.start()
