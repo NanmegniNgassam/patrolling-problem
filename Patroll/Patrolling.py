@@ -9,31 +9,6 @@ from algos.algochemin import *
 from algos.algoaco import generate_path
 from algos.algoacoclustering import *
 
-def modify_nodes_with_costs(nodes, increase_factor_range=(1.05, 1.2), percentage=0.2):
-    """
-    Modifie les positions des nœuds pour simuler un coût accru en pluie.
-
-    :param nodes: Liste des positions des nœuds [(x1, y1), (x2, y2), ...].
-    :param increase_factor_range: Plage pour augmenter les distances des nœuds.
-    :param percentage: Pourcentage de nœuds à modifier.
-    :return: Liste des positions des nœuds modifiées.
-    """
-    num_nodes = len(nodes)
-    num_nodes_to_modify = int(num_nodes * percentage)
-
-    # Sélection aléatoire des nœuds à modifier
-    nodes_to_modify = random.sample(range(num_nodes), num_nodes_to_modify)
-
-    modified_nodes = []
-    for i, (x, y) in enumerate(nodes):
-        if i in nodes_to_modify:
-            # Augmenter les coordonnées proportionnellement pour simuler un coût accru
-            factor = random.uniform(*increase_factor_range)
-            modified_nodes.append((x * factor, y * factor))
-        else:
-            modified_nodes.append((x, y))  # Garder les positions inchangées
-
-    return modified_nodes
 
 
 if __name__ == '__main__':
@@ -48,19 +23,13 @@ if __name__ == '__main__':
     if selected_map in maps:
          nodes_position = scaling_nodes_position(maps[selected_map]["nodes"])
          edges = maps[selected_map]["edges"]
-
     if weather == "Pluie":
         nodes_position = scaling_nodes_position(modify_nodes_with_costs(nodes_position))
         agent_speed = 4
 
-    #chemins = []
-    #if algorithm == "ACO":
-    #    chemins = generate_path_cluster_monobase(num_agents,nodes_position,edges)
-
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
-    last_visited_shared = manager.dict({i: None for i in range(len(nodes_position))})
-
+    last_visited_shared = manager.dict({i: time.time() for i in range(len(nodes_position))})
     # Create a shared list with three elements
     shared_list_next_node = manager.list([0] * num_agents)  # Shared list initialized to [0, 0, 0]
     shared_list_chemins = manager.list([None] * num_agents)
@@ -84,7 +53,7 @@ if __name__ == '__main__':
             agent = multiprocessing.Process(target=agent_process_runtime, args=(i,agent_speed,nodes_position,edges, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
         elif algorithm == "ACO":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
-        elif algorithm == "Multibase":
+        elif algorithm == "M-ACOCluster":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
         agents.append(agent)    
         agent.start()

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import pygame
 import numpy as np
+import random
 from config import maps
 from algos.algoaco import generate_path
 from algos.algoacoclustering import generate_path_cluster_monobase, generate_path_cluster_multibase
@@ -86,14 +87,75 @@ def scaling_nodes_position(nodes_position):
     return nodes_position
 
 def display_menu(screen):
+    # Charger l'image de fond
+    try:
+        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+        screen.blit(background, (0, 0))
+    except pygame.error as e:
+        print(f"Erreur lors du chargement de l'image : {e}")
+
+    # Définir les polices
+    font_title = pygame.font.Font(None, 50)
+    font_button = pygame.font.Font(None, 40)
+
+    # Créer des boutons pour Multi-base et Mono-base
+    MULTI_BASE_BUTTON = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 100, 300, 50)
+    MONO_BASE_BUTTON = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2, 300, 50)
+
+    running = True
+    selected_mode = None
+
+    while running:
+        # Effacer l'écran et afficher l'arrière-plan
+        screen.fill(WHITE)
+        screen.blit(background, (0, 0))
+
+        # Titre principal
+        title = font_title.render("Choisissez un mode :", True, BLACK)
+        title_rect = title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 200))
+        screen.blit(title, title_rect)
+
+        # Boutons Multi-base et Mono-base
+        pygame.draw.rect(screen, LIGHT_BLUE, MULTI_BASE_BUTTON)
+        pygame.draw.rect(screen, LIGHT_BLUE, MONO_BASE_BUTTON)
+
+        multi_base_text = font_button.render("Multi-base", True, BLACK)
+        mono_base_text = font_button.render("Mono-base", True, BLACK)
+
+        screen.blit(multi_base_text, multi_base_text.get_rect(center=MULTI_BASE_BUTTON.center))
+        screen.blit(mono_base_text, mono_base_text.get_rect(center=MONO_BASE_BUTTON.center))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+
+                if MULTI_BASE_BUTTON.collidepoint(mouse_pos):
+                    selected_mode = "Multi-base"
+                    running = False
+                elif MONO_BASE_BUTTON.collidepoint(mouse_pos):
+                    selected_mode = "Mono-base"
+                    running = False
+
+    if selected_mode == "Mono-base":
+        return display_menu_monobase(screen)
+    elif selected_mode == "Multi-base":
+        return display_menu_multibase(screen)
+    
+
+
+def display_menu_monobase(screen):
     # Nombre d'agents (initialement 3)
     num_agents = 3
-    num_loop = 5
 
     # Charger l'image de fond
     try:
-        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        background = pygame.image.load("image1.jpg")
+        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -130,19 +192,174 @@ def display_menu(screen):
         pygame.draw.rect(screen, LIGHT_BLUE, RANDOM_BUTTON)
         pygame.draw.rect(screen, LIGHT_BLUE, RUNTIME_BUTTON)
         pygame.draw.rect(screen, LIGHT_BLUE, CHEMIN_BUTTON)
-        pygame.draw.rect(screen, LIGHT_BLUE, MULTIBASE_BUTTON)
 
         # Texte des boutons pour les algorithmes
         random_text = font_button.render("Random", True, BLACK)
         runtime_text = font_button.render("Runtime", True, BLACK)
         chemin_text = font_button.render("Multi-ACO", True, BLACK)
-        multibase_text = font_button.render("Multibase", True, BLACK)
 
         # Positionnement du texte pour les algorithmes
         screen.blit(random_text, random_text.get_rect(center=RANDOM_BUTTON.center))
         screen.blit(runtime_text, runtime_text.get_rect(center=RUNTIME_BUTTON.center))
         screen.blit(chemin_text, chemin_text.get_rect(center=CHEMIN_BUTTON.center))
-        screen.blit(multibase_text, multibase_text.get_rect(center=MULTIBASE_BUTTON.center))
+
+        # Ajout du bouton Multi-ACO Cluster
+        cluster_button_rect = pygame.Rect((WIDTH - BUTTON_WIDTH) // 2, CHEMIN_BUTTON.bottom + 20, BUTTON_WIDTH, BUTTON_HEIGHT)
+        pygame.draw.rect(screen, LIGHT_BLUE, cluster_button_rect)
+        cluster_text = font_button.render("M-ACO Cluster", True, BLACK)
+        screen.blit(cluster_text, cluster_text.get_rect(center=cluster_button_rect.center))
+
+        # Section choix du nombre d'agents (ajustée vers le haut)
+        label_text = font_label.render("Nombre d'agents", True, BLACK)
+        label_rect = label_text.get_rect(center=(150, HEIGHT // 2 - 30))  # Remonté de 5 pixels
+        screen.blit(label_text, label_rect)
+
+        agents_text = font_label.render(f"{num_agents}", True, BLACK)
+        agents_rect = agents_text.get_rect(center=(150, HEIGHT // 2 + 5))  # Inchangé
+        screen.blit(agents_text, agents_rect)
+
+        # Boutons + et - (remontés de 10 pixels)
+        minus_button_rect = pygame.Rect(90, HEIGHT // 2 + 25, 40, 40)  # Bouton "-" ajusté
+        plus_button_rect = pygame.Rect(170, HEIGHT // 2 + 25, 40, 40)  # Bouton "+" ajusté
+
+        pygame.draw.rect(screen, DARK_BLUE, minus_button_rect)
+        pygame.draw.rect(screen, DARK_BLUE, plus_button_rect)
+
+        # Texte des boutons
+        minus_text = font_button.render("-", True, WHITE)
+        plus_text = font_button.render("+", True, WHITE)
+
+        screen.blit(minus_text, minus_text.get_rect(center=minus_button_rect.center))
+        screen.blit(plus_text, plus_text.get_rect(center=plus_button_rect.center))
+
+        # Menu déroulant map (placé à droite)
+        dropdown_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45, 200, 40)  # Nouvelle position à droite
+        pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
+        selected_map_text = font_dropdown.render(listmap[selected_map_index], True, BLACK)
+        screen.blit(selected_map_text, selected_map_text.get_rect(center=dropdown_rect.center))
+
+        # Menu déroulant pour la météo
+        weather_rect = pygame.Rect(WIDTH - 700, HEIGHT // 2 + 115, 200, 40)
+        pygame.draw.rect(screen, LIGHT_BLUE, weather_rect)
+        selected_weather_text = font_dropdown.render(weather_options[selected_weather_index], True, BLACK)
+        screen.blit(selected_weather_text, selected_weather_text.get_rect(center=weather_rect.center))
+
+        if dropdown_open:
+            for i, map_name in enumerate(listmap):
+                option_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45 + i * 40, 200, 40)  # Alignement des options à droite
+                pygame.draw.rect(screen, DARK_BLUE if i == selected_map_index else LIGHT_BLUE, option_rect)
+                option_text = font_dropdown.render(map_name, True, BLACK)
+                screen.blit(option_text, option_text.get_rect(center=option_rect.center))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return None, None, None
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if weather_rect.collidepoint(mouse_pos):
+                    selected_weather_index = (selected_weather_index + 1) % len(weather_options)
+
+                if dropdown_rect.collidepoint(mouse_pos):
+                    dropdown_open = not dropdown_open
+                elif dropdown_open:
+                    for i, map_name in enumerate(listmap):
+                        option_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45 + i * 40, 200, 40)
+                        if option_rect.collidepoint(mouse_pos):
+                            selected_map_index = i
+                            dropdown_open = False
+                            break
+
+                elif RANDOM_BUTTON.collidepoint(mouse_pos):
+                    return listmap[selected_map_index], "Random", num_agents, None, weather_options[selected_weather_index]
+                elif RUNTIME_BUTTON.collidepoint(mouse_pos):
+                    return listmap[selected_map_index], "Runtime", num_agents, None, weather_options[selected_weather_index]
+                elif CHEMIN_BUTTON.collidepoint(mouse_pos):
+                    # Afficher un écran d'attente
+                    screen.fill(WHITE)
+                    waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
+                    waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                    screen.blit(waiting_text, waiting_rect)
+                    pygame.display.flip()
+                    # Générer les chemins
+                    nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
+                    edges = maps[listmap[selected_map_index]]["edges"]
+                    chemins = generate_path(num_agents, nodes_position, edges)
+
+                    return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
+                elif cluster_button_rect.collidepoint(mouse_pos):
+                    # Logique pour le bouton Multi-ACO Cluster
+                    # Afficher un écran d'attente
+                    num_loop = 5
+                    screen.fill(WHITE)
+                    waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
+                    waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                    screen.blit(waiting_text, waiting_rect)
+                    pygame.display.flip()
+                    # Générer les chemins
+                    nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
+                    edges = maps[listmap[selected_map_index]]["edges"]
+                    chemins = generate_path_cluster_monobase(num_agents,nodes_position,edges,num_loop)
+                    print("Les agents vont effectuer ce nombre de rond avant de rentrer à la caserne:", num_loop)
+                    return listmap[selected_map_index], "M-ACOCluster", num_agents, chemins, weather_options[selected_weather_index]
+
+                elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
+                    num_agents -= 1
+                elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 5:
+                    num_agents += 1
+
+
+def display_menu_multibase(screen):
+    # Nombre d'agents (initialement 3)
+    num_agents = 3
+    num_loop = 5
+
+    # Charger l'image de fond
+    try:
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("patrolling-problem\Patroll\image1.jpg")
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+        screen.blit(background, (0, 0))
+    except pygame.error as e:
+        print(f"Erreur lors du chargement de l'image : {e}")
+
+    # Définir les polices
+    font_title = pygame.font.Font(None, 50)
+    font_button = pygame.font.Font(None, 40)
+    font_label = pygame.font.Font(None, 35)
+    font_dropdown = pygame.font.Font(None, 30)
+    font_waiting = pygame.font.Font(None, 50)
+
+    # Options des cartes
+    listmap = list(maps.keys())
+    dropdown_open = False
+    selected_map_index = 0
+    # Options pour la météo
+    weather_options = ["Soleil", "Pluie"]
+    selected_weather_index = 0
+
+    running = True
+    chemins = None  # Variable pour stocker les chemins générés
+    while running:
+        # Effacer l'écran et afficher l'arrière-plan
+        screen.fill(WHITE)
+        screen.blit(background, (0, 0))
+
+        # Titre
+        title = font_title.render("Choisissez une carte et un algorithme :", True, BLACK)
+        title_rect = title.get_rect(center=(WIDTH // 2, 50))
+        screen.blit(title, title_rect)
+
+        # Bouton pour Multibase uniquement
+        pygame.draw.rect(screen, LIGHT_BLUE, MULTIBASE_BUTTON)
+
+        # Texte du bouton Multibase
+        multiacocluster_text = font_button.render("M-ACO Cluster", True, BLACK)
+
+        # Positionnement du texte pour Multibase
+        screen.blit(multiacocluster_text, multiacocluster_text.get_rect(center=MULTIBASE_BUTTON.center))
 
         # Section choix du nombre d'agents (ajustée vers le haut)
         label_text = font_label.render("Nombre d'agents", True, BLACK)
@@ -224,30 +441,6 @@ def display_menu(screen):
                             selected_map_index = i
                             dropdown_open = False
                             break
-
-                elif RANDOM_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "Random", num_agents, None, weather_options[selected_weather_index]
-                elif RUNTIME_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "Runtime", num_agents, None, weather_options[selected_weather_index]
-                elif CHEMIN_BUTTON.collidepoint(mouse_pos):
-                    # Afficher un écran d'attente
-                    screen.fill(WHITE)
-                    waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
-                    waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-                    screen.blit(waiting_text, waiting_rect)
-                    pygame.display.flip()
-
-                    # Générer les chemins
-                    nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
-                    edges = maps[listmap[selected_map_index]]["edges"]
-                    if num_agents ==1:
-                        chemins = generate_path(num_agents, nodes_position, edges)
-                    else:
-                        chemins = generate_path_cluster_monobase(num_agents,nodes_position,edges,num_loop)
-                        print("Les agents vont effectuer ce nombre de rond avant de rentrer à la caserne:", num_loop)
-
-                    return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
-                
                 elif MULTIBASE_BUTTON.collidepoint(mouse_pos):
                     # Afficher un écran d'attente
                     screen.fill(WHITE)
@@ -261,7 +454,7 @@ def display_menu(screen):
                     edges = maps[listmap[selected_map_index]]["edges"]
                     chemins = generate_path_cluster_multibase(num_agents,nodes_position,edges)
 
-                    return listmap[selected_map_index], "Multibase", num_agents, chemins, weather_options[selected_weather_index]
+                    return listmap[selected_map_index], "M-ACOCluster", num_agents, chemins, weather_options[selected_weather_index]
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
@@ -271,7 +464,6 @@ def display_menu(screen):
                     num_loop -= 1
                 elif plus_button_loop.collidepoint(mouse_pos) and num_loop < 10:
                     num_loop += 1
-
 
 
 def display_graph(screen, FONT, nodes_position, edges, last_visited_shared,num_agents,position_queues,agent_positions):
@@ -320,7 +512,7 @@ def display_graph_on_pygame(screen, idleness_data):
     ax.set_xlabel("Time (seconds)")
     ax.set_ylabel("Average Idleness")
     ax.set_title("Average Idleness vs. Time")
-    ax.set_xlim(0, 40)
+    ax.set_xlim(0, 60)
     ax.legend()
     ax.grid()
 
@@ -389,9 +581,9 @@ def end_simulation(screen, FONT, final_average_idleness, agents, idleness_data):
     pygame.quit()
 
 def calculate_node_color(last_visit_time):
-    if last_visit_time is None:
-        # Nœud jamais visité, il reste rouge
-        return IDLE_COLOR
+    if last_visit_time is None or last_visit_time == 0:
+        # Nœud jamais visité ou initialisé à 0, il est vert
+        return (0, 255, 0)  # Vert par défaut
 
     elapsed_time = time.time() - last_visit_time
     # Interpole entre vert et rouge en fonction du temps depuis la dernière visite
@@ -414,3 +606,30 @@ def calculate_average_idleness(last_visited):
         node_count += 1
 
     return total_idleness / node_count if node_count > 0 else 0
+
+
+def modify_nodes_with_costs(nodes, increase_factor_range=(1.05, 1.2), percentage=0.2):
+    """
+    Modifie les positions des nœuds pour simuler un coût accru en pluie.
+
+    :param nodes: Liste des positions des nœuds [(x1, y1), (x2, y2), ...].
+    :param increase_factor_range: Plage pour augmenter les distances des nœuds.
+    :param percentage: Pourcentage de nœuds à modifier.
+    :return: Liste des positions des nœuds modifiées.
+    """
+    num_nodes = len(nodes)
+    num_nodes_to_modify = int(num_nodes * percentage)
+
+    # Sélection aléatoire des nœuds à modifier
+    nodes_to_modify = random.sample(range(num_nodes), num_nodes_to_modify)
+
+    modified_nodes = []
+    for i, (x, y) in enumerate(nodes):
+        if i in nodes_to_modify:
+            # Augmenter les coordonnées proportionnellement pour simuler un coût accru
+            factor = random.uniform(*increase_factor_range)
+            modified_nodes.append((x * factor, y * factor))
+        else:
+            modified_nodes.append((x, y))  # Garder les positions inchangées
+
+    return modified_nodes
