@@ -8,6 +8,33 @@ from algos.algoruntime import *
 from algos.algochemin import *
 from algos.algoaco import generate_path
 
+def modify_nodes_with_costs(nodes, increase_factor_range=(1.05, 1.2), percentage=0.2):
+    """
+    Modifie les positions des nœuds pour simuler un coût accru en pluie.
+
+    :param nodes: Liste des positions des nœuds [(x1, y1), (x2, y2), ...].
+    :param increase_factor_range: Plage pour augmenter les distances des nœuds.
+    :param percentage: Pourcentage de nœuds à modifier.
+    :return: Liste des positions des nœuds modifiées.
+    """
+    num_nodes = len(nodes)
+    num_nodes_to_modify = int(num_nodes * percentage)
+
+    # Sélection aléatoire des nœuds à modifier
+    nodes_to_modify = random.sample(range(num_nodes), num_nodes_to_modify)
+
+    modified_nodes = []
+    for i, (x, y) in enumerate(nodes):
+        if i in nodes_to_modify:
+            # Augmenter les coordonnées proportionnellement pour simuler un coût accru
+            factor = random.uniform(*increase_factor_range)
+            modified_nodes.append((x * factor, y * factor))
+        else:
+            modified_nodes.append((x, y))  # Garder les positions inchangées
+
+    return modified_nodes
+
+
 if __name__ == '__main__':
     # Initialisation de pygame
     pygame.init()
@@ -16,10 +43,14 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     FONT = pygame.font.Font(None, 12)  
 
-    selected_map, algorithm, num_agents, chemins = display_menu(screen)
+    selected_map, algorithm, num_agents, chemins, weather = display_menu(screen)
     if selected_map in maps:
          nodes_position = scaling_nodes_position(maps[selected_map]["nodes"])
          edges = maps[selected_map]["edges"]
+
+    if weather == "Pluie":
+        nodes_position = scaling_nodes_position(modify_nodes_with_costs(nodes_position))
+        agent_speed = 4
 
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
@@ -46,11 +77,11 @@ if __name__ == '__main__':
         position_queue = multiprocessing.Queue()
         position_queues.append(position_queue)
         if algorithm == "Random":
-            agent = multiprocessing.Process(target=agent_process_random, args=(i, nodes_position, edges, position_queue, last_visited_shared, lock,stop_simulation))
+            agent = multiprocessing.Process(target=agent_process_random, args=(i,agent_speed, nodes_position, edges, position_queue, last_visited_shared, lock,stop_simulation))
         elif algorithm == "Runtime":
-            agent = multiprocessing.Process(target=agent_process_runtime, args=(i,nodes_position,edges, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
+            agent = multiprocessing.Process(target=agent_process_runtime, args=(i,agent_speed,nodes_position,edges, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
         elif algorithm == "ACO":
-            agent = multiprocessing.Process(target=agent_process_chemins, args=(i, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
+            agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
         agents.append(agent)    
         agent.start()
 

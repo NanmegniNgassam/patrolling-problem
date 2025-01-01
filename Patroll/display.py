@@ -23,19 +23,19 @@ DARK_BLUE = (100, 149, 237)
 
 RANDOM_BUTTON = pygame.Rect(
     (WIDTH - BUTTON_WIDTH) // 2,
-    (HEIGHT - BUTTON_HEIGHT) // 2 - 60,
+    (HEIGHT - BUTTON_HEIGHT) // 2 - 20,
     BUTTON_WIDTH,
     BUTTON_HEIGHT,
 )
 RUNTIME_BUTTON = pygame.Rect(
     (WIDTH - BUTTON_WIDTH) // 2,
-    (HEIGHT - BUTTON_HEIGHT) // 2 + 20,
+    (HEIGHT - BUTTON_HEIGHT) // 2 + 60,
     BUTTON_WIDTH,
     BUTTON_HEIGHT,
 )
 CHEMIN_BUTTON = pygame.Rect(
     (WIDTH - BUTTON_WIDTH) // 2,
-    (HEIGHT - BUTTON_HEIGHT) // 2 + 100,
+    (HEIGHT - BUTTON_HEIGHT) // 2 + 140,
     BUTTON_WIDTH,
     BUTTON_HEIGHT,
 )
@@ -80,7 +80,7 @@ def display_menu(screen):
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image0.jpg")
+        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -97,6 +97,9 @@ def display_menu(screen):
     listmap = list(maps.keys())
     dropdown_open = False
     selected_map_index = 0
+    # Options pour la météo
+    weather_options = ["Soleil", "Pluie"]
+    selected_weather_index = 0
 
     running = True
     chemins = None  # Variable pour stocker les chemins générés
@@ -125,32 +128,44 @@ def display_menu(screen):
         screen.blit(runtime_text, runtime_text.get_rect(center=RUNTIME_BUTTON.center))
         screen.blit(chemin_text, chemin_text.get_rect(center=CHEMIN_BUTTON.center))
 
-        # Section choix du nombre d'agents
+        # Section choix du nombre d'agents (ajustée vers le haut)
         label_text = font_label.render("Nombre d'agents", True, BLACK)
-        label_rect = label_text.get_rect(center=(WIDTH - 150, HEIGHT // 2 - 75))
+        label_rect = label_text.get_rect(center=(150, HEIGHT // 2 - 30))  # Remonté de 5 pixels
         screen.blit(label_text, label_rect)
 
         agents_text = font_label.render(f"{num_agents}", True, BLACK)
-        agents_rect = agents_text.get_rect(center=(WIDTH - 150, HEIGHT // 2 - 45))
+        agents_rect = agents_text.get_rect(center=(150, HEIGHT // 2 + 5))  # Inchangé
         screen.blit(agents_text, agents_rect)
 
-        # Boutons + et -
-        pygame.draw.rect(screen, DARK_BLUE, MINUS_BUTTON)
-        pygame.draw.rect(screen, DARK_BLUE, PLUS_BUTTON)
+        # Boutons + et - (remontés de 10 pixels)
+        minus_button_rect = pygame.Rect(90, HEIGHT // 2 + 25, 40, 40)  # Bouton "-" ajusté
+        plus_button_rect = pygame.Rect(170, HEIGHT // 2 + 25, 40, 40)  # Bouton "+" ajusté
+
+        pygame.draw.rect(screen, DARK_BLUE, minus_button_rect)
+        pygame.draw.rect(screen, DARK_BLUE, plus_button_rect)
+
+        # Texte des boutons
         minus_text = font_button.render("-", True, WHITE)
         plus_text = font_button.render("+", True, WHITE)
-        screen.blit(minus_text, minus_text.get_rect(center=MINUS_BUTTON.center))
-        screen.blit(plus_text, plus_text.get_rect(center=PLUS_BUTTON.center))
 
-        # Liste déroulante
-        dropdown_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 85, 200, 40)
+        screen.blit(minus_text, minus_text.get_rect(center=minus_button_rect.center))
+        screen.blit(plus_text, plus_text.get_rect(center=plus_button_rect.center))
+
+        # Menu déroulant map (placé à droite)
+        dropdown_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45, 200, 40)  # Nouvelle position à droite
         pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
         selected_map_text = font_dropdown.render(listmap[selected_map_index], True, BLACK)
         screen.blit(selected_map_text, selected_map_text.get_rect(center=dropdown_rect.center))
 
+        # Menu déroulant pour la météo
+        weather_rect = pygame.Rect(WIDTH - 700, HEIGHT // 2 + 115, 200, 40)
+        pygame.draw.rect(screen, LIGHT_BLUE, weather_rect)
+        selected_weather_text = font_dropdown.render(weather_options[selected_weather_index], True, BLACK)
+        screen.blit(selected_weather_text, selected_weather_text.get_rect(center=weather_rect.center))
+
         if dropdown_open:
             for i, map_name in enumerate(listmap):
-                option_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 45 + i * 40, 200, 40)
+                option_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45 + i * 40, 200, 40)  # Alignement des options à droite
                 pygame.draw.rect(screen, DARK_BLUE if i == selected_map_index else LIGHT_BLUE, option_rect)
                 option_text = font_dropdown.render(map_name, True, BLACK)
                 screen.blit(option_text, option_text.get_rect(center=option_rect.center))
@@ -163,21 +178,23 @@ def display_menu(screen):
                 return None, None, None
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+                if weather_rect.collidepoint(mouse_pos):
+                    selected_weather_index = (selected_weather_index + 1) % len(weather_options)
 
                 if dropdown_rect.collidepoint(mouse_pos):
                     dropdown_open = not dropdown_open
                 elif dropdown_open:
                     for i, map_name in enumerate(listmap):
-                        option_rect = pygame.Rect(WIDTH // 4 - 150, HEIGHT // 2 - 45 + i * 40, 200, 40)
+                        option_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45 + i * 40, 200, 40)
                         if option_rect.collidepoint(mouse_pos):
                             selected_map_index = i
                             dropdown_open = False
                             break
 
                 elif RANDOM_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "Random", num_agents, None
+                    return listmap[selected_map_index], "Random", num_agents, None, weather_options[selected_weather_index]
                 elif RUNTIME_BUTTON.collidepoint(mouse_pos):
-                    return listmap[selected_map_index], "Runtime", num_agents, None
+                    return listmap[selected_map_index], "Runtime", num_agents, None, weather_options[selected_weather_index]
                 elif CHEMIN_BUTTON.collidepoint(mouse_pos):
                     # Afficher un écran d'attente
                     screen.fill(WHITE)
@@ -191,18 +208,12 @@ def display_menu(screen):
                     edges = maps[listmap[selected_map_index]]["edges"]
                     chemins = generate_path(num_agents, nodes_position, edges)
 
-                    return listmap[selected_map_index], "ACO", num_agents, chemins
+                    return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
 
-                elif MINUS_BUTTON.collidepoint(mouse_pos) and num_agents > 1:
+                elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
-                elif PLUS_BUTTON.collidepoint(mouse_pos) and num_agents < 5:
+                elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 5:
                     num_agents += 1
-
-
-
-
-
-
 
 
 

@@ -40,7 +40,7 @@ def a_star_shortest_path(nodes_position, edges, start, goal):
 
 
 # Fonction de déplacement de l'agent avec chemin donné
-def agent_process_random(agent_id, nodes_position, edges, position_queue, last_visited_shared, lock,stop_simulation):
+def agent_process_random(agent_id, agent_speed, nodes_position, edges, position_queue, last_visited_shared, lock,stop_simulation):
     agent_position = nodes_position[0]
     agent_node_index = 0
     path = []  # Chemin que l'agent doit suivre

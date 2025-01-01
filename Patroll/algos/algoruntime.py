@@ -28,7 +28,7 @@ def shortest_path(graph, start, end):
     
     return []  # Aucun chemin trouvé
 
-def agent_process_runtime(agent_id,nodes_position, edges, num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
+def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
     
     # Informations récupérées depuis graphstructure
     adjacency_list = {i: [] for i in range(len(nodes_position))}

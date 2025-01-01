@@ -8,7 +8,7 @@ from config import agent_speed, FPS
 
 
 # Fonction de déplacement de l'agent avec chemin donné
-def agent_process_chemins(agent_id, nodes_position, position_queue, chemin, last_visited_shared,stop_simulation):
+def agent_process_chemins(agent_id, agent_speed, nodes_position, position_queue, chemin, last_visited_shared,stop_simulation):
     agent_position = nodes_position[chemin[0]]
     agent_target_position = nodes_position[chemin[1]]
     agent_node_index = chemin[0]
