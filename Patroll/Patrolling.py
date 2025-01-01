@@ -9,8 +9,6 @@ from algos.algochemin import *
 from algos.algoaco import generate_path
 from algos.algoacoclustering import *
 
-
-
 if __name__ == '__main__':
     # Initialisation de pygame
     pygame.init()
@@ -37,8 +35,8 @@ if __name__ == '__main__':
     # Création des files de communication et des processus pour chaque agent
     position_queues = []
     agents = []
-    initial_node = nodes_position[1]
-    initial_target_node = nodes_position[2]
+    initial_node = nodes_position[0]
+    initial_target_node = nodes_position[1]
     agent_positions = manager.list([initial_node] * num_agents)
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen

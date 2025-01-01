@@ -307,7 +307,7 @@ def display_menu_monobase(screen):
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
-                elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 5:
+                elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 10:
                     num_agents += 1
 
 
@@ -458,7 +458,7 @@ def display_menu_multibase(screen):
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
-                elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 5:
+                elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 10:
                     num_agents += 1
                 elif minus_button_loop.collidepoint(mouse_pos) and num_loop > 2:
                     num_loop -= 1
