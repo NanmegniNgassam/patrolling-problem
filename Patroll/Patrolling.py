@@ -53,6 +53,9 @@ if __name__ == '__main__':
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
         elif algorithm == "M-ACOCluster":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
+        elif algorithm == "Hybrid":
+            agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
+
         agents.append(agent)    
         agent.start()
 

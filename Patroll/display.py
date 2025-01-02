@@ -6,7 +6,7 @@ import pygame
 import numpy as np
 import random
 from config import maps
-from algos.algoaco import generate_path
+from algos.algoaco import generate_path, generate_path_with_genetic
 from algos.algoacoclustering import generate_path_cluster_monobase, generate_path_cluster_multibase
 
 # Constantes utilisées pour l'affichage
@@ -89,7 +89,8 @@ def scaling_nodes_position(nodes_position):
 def display_menu(screen):
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -155,7 +156,8 @@ def display_menu_monobase(screen):
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -319,7 +321,7 @@ def display_menu_multibase(screen):
     # Charger l'image de fond
     try:
         #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        background = pygame.image.load("patrolling-problem\Patroll\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -354,12 +356,15 @@ def display_menu_multibase(screen):
 
         # Bouton pour Multibase uniquement
         pygame.draw.rect(screen, LIGHT_BLUE, MULTIBASE_BUTTON)
+        pygame.draw.rect(screen, LIGHT_BLUE, RANDOM_BUTTON)
 
         # Texte du bouton Multibase
         multiacocluster_text = font_button.render("M-ACO Cluster", True, BLACK)
+        genetique_text = font_button.render("Hybrid ACO", True, BLACK)
 
         # Positionnement du texte pour Multibase
         screen.blit(multiacocluster_text, multiacocluster_text.get_rect(center=MULTIBASE_BUTTON.center))
+        screen.blit(genetique_text, genetique_text.get_rect(center= RANDOM_BUTTON.center))
 
         # Section choix du nombre d'agents (ajustée vers le haut)
         label_text = font_label.render("Nombre d'agents", True, BLACK)
@@ -455,6 +460,22 @@ def display_menu_multibase(screen):
                     chemins = generate_path_cluster_multibase(num_agents,nodes_position,edges)
 
                     return listmap[selected_map_index], "M-ACOCluster", num_agents, chemins, weather_options[selected_weather_index]
+
+                elif RANDOM_BUTTON.collidepoint(mouse_pos):
+                    # Afficher un écran d'attente
+                    screen.fill(WHITE)
+                    waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
+                    waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+                    screen.blit(waiting_text, waiting_rect)
+                    pygame.display.flip()
+
+                    # Générer les chemins
+                    nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
+                    edges = maps[listmap[selected_map_index]]["edges"]
+                    chemins = generate_path_with_genetic(nodes_position, edges, num_agents)
+
+                    return listmap[selected_map_index], "Hybrid", num_agents, chemins, weather_options[selected_weather_index]
+
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
