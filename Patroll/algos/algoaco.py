@@ -120,11 +120,13 @@ def correct_path(graph, path):
 # Renvoie les chemin de l'algo génétique
 def generate_path_with_genetic(nodes_position, edges, num_agents):
     all_path = []
-    nodes, graph, distance_matrix = aco_parameters_with_genetic(nodes_position, edges)
+    nodes, graph, distance_matrix = aco_parameters_with_genetic(nodes_position, edges, num_agents)
     for node in nodes :
         path, best_lenth=aco_tsp(distance_matrix, node, graph, 1)
         print(f"path: {path}")
         #path = path[0]
+        path = path[0]
+        print(f"Vrai path: {path}")
         is_valid = validate_path(graph, path)
         if not is_valid:
             path = correct_path(graph, path)
@@ -135,7 +137,7 @@ def generate_path_with_genetic(nodes_position, edges, num_agents):
             #if not is_valid:
             #    path[i] = correct_path(graph, path[i])
         #print(f"Chemin trouvé : {path}")
-        path = path[0]
+        #path = path[0]
         all_path.append(path)
         print(f"path: {path}")
 

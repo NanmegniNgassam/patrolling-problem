@@ -4,13 +4,13 @@ import networkx as nx
 import numpy as np
 import random
 
-num_agents = 3
+#num_agents = 3
 
 # Paramètres de l'algorithme génétique
 POPULATION_SIZE = 100  # Taille de la population
 #N = len(nodes_position)  # Taille des individus
 N = 0  # Taille des individus
-NB_AGENT = num_agents  # Nombre de cases avec valeur 1
+#NB_AGENT = num_agents  # Nombre de cases avec valeur 1
 GENERATIONS = 10  # Nombre de générations
 MUTATION_RATE = 0.1  # Probabilité de mutation
 
@@ -52,17 +52,17 @@ def compute_weighted_distance_matrix(graph):
 
 
 # Génération aléatoire d'un individu
-def generate_individual(nodes_position):
+def generate_individual(nodes_position, num_agents):
     N = len(nodes_position)
     individual = [0] * N
-    positions = random.sample(range(N), NB_AGENT)
+    positions = random.sample(range(N), num_agents)
     for pos in positions:
         individual[pos] = 1
     return individual
 
 # Initialisation de la population
-def initialize_population(nodes_position):
-    return [generate_individual(nodes_position) for _ in range(POPULATION_SIZE)]
+def initialize_population(nodes_position, num_agents):
+    return [generate_individual(nodes_position, num_agents) for _ in range(POPULATION_SIZE)]
 
 # Fonction de fitness (somme des positions des agents)
 def fitness(individual, distance_matrix, nodes_position):
@@ -92,15 +92,15 @@ def selection(population, distance_matrix, nodes_position):
             return ind
 
 # Croisement entre deux parents
-def crossover(parent1, parent2, nodes_position):
+def crossover(parent1, parent2, nodes_position, num_agents):
     N = len(nodes_position)
     crossover_point = random.randint(1, N - 1)
     child = parent1[:crossover_point] + parent2[crossover_point:]
 
     # Assurer NB_AGENT agents après croisement
-    while sum(child) > NB_AGENT:
+    while sum(child) > num_agents:
         child[random.choice([i for i, v in enumerate(child) if v == 1])] = 0
-    while sum(child) < NB_AGENT:
+    while sum(child) < num_agents:
         child[random.choice([i for i, v in enumerate(child) if v == 0])] = 1
 
     return child
@@ -113,8 +113,8 @@ def mutate(individual, nodes_position):
         individual[idx1], individual[idx2] = individual[idx2], individual[idx1]
 
 # Algorithme génétique principal
-def genetic_algorithm(distance_matrix, nodes_position):
-    population = initialize_population(nodes_position)
+def genetic_algorithm(distance_matrix, nodes_position, num_agents):
+    population = initialize_population(nodes_position, num_agents)
 
     for generation in range(GENERATIONS):
         new_population = []
@@ -122,7 +122,7 @@ def genetic_algorithm(distance_matrix, nodes_position):
         for _ in range(POPULATION_SIZE):
             parent1 = selection(population, distance_matrix, nodes_position)
             parent2 = selection(population, distance_matrix, nodes_position)
-            child = crossover(parent1, parent2, nodes_position)
+            child = crossover(parent1, parent2, nodes_position, num_agents)
             mutate(child, nodes_position)
             new_population.append(child)
 
@@ -143,10 +143,10 @@ def genetic_algorithm(distance_matrix, nodes_position):
 
 
 # Exécution de l'algorithme
-def aco_parameters_with_genetic(nodes_position, edges):
+def aco_parameters_with_genetic(nodes_position, edges, num_agents):
     graph = build_weighted_graph(nodes_position, edges)
     distance_matrix = compute_weighted_distance_matrix(graph)
-    best_solution = genetic_algorithm(distance_matrix, nodes_position)
+    best_solution = genetic_algorithm(distance_matrix, nodes_position, num_agents)
     print("Meilleure solution:", best_solution)
     print("Fitness de la meilleure solution:", fitness(best_solution, distance_matrix, nodes_position))
     
