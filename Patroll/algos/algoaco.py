@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 import networkx as nx
-from algos.algogenetic import aco_parameters_with_genetic
+from algos.genetic import aco_parameters_with_genetic
 
 
 # ALGORITHME ACO

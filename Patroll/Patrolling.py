@@ -21,13 +21,12 @@ if __name__ == '__main__':
     if selected_map in maps:
          nodes_position = scaling_nodes_position(maps[selected_map]["nodes"])
          edges = maps[selected_map]["edges"]
-    if weather == "Pluie":
+    if weather == "Neige":
         nodes_position = scaling_nodes_position(modify_nodes_with_costs(nodes_position))
         agent_speed = 4
 
     # Utiliser un dictionnaire partagé pour `last_visited`
     manager = multiprocessing.Manager()
-    last_visited_shared = manager.dict({i: time.time() for i in range(len(nodes_position))})
     # Create a shared list with three elements
     shared_list_next_node = manager.list([0] * num_agents)  # Shared list initialized to [0, 0, 0]
     shared_list_chemins = manager.list([None] * num_agents)
@@ -40,7 +39,7 @@ if __name__ == '__main__':
     agent_positions = manager.list([initial_node] * num_agents)
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen
-    
+    last_visited_shared = manager.dict({i: None for i in range(len(nodes_position))})
 
     for i in range(num_agents):
         position_queue = multiprocessing.Queue()
@@ -53,9 +52,6 @@ if __name__ == '__main__':
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
         elif algorithm == "M-ACOCluster":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
-        elif algorithm == "Hybrid":
-            agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
-
         agents.append(agent)    
         agent.start()
 
@@ -64,6 +60,8 @@ if __name__ == '__main__':
     total_idleness = 0
     total_took = 0
     idleness_data = []
+    max_idleness = 0
+
     while running:
         elapsed_time = time.time() - start_time
         if elapsed_time >= 60:
@@ -84,6 +82,14 @@ if __name__ == '__main__':
         idleness_data.append(current_idleness)
         total_idleness += current_idleness  # Ajouter l'oisiveté du moment
         total_took += 1  # Incrémenter le nombre de prise d'info
+        current_time = time.time()
+        max_idleness = max(max_idleness,  # La valeur maximale précédente
+            max(
+                current_time - last_visit if last_visit is not None else float('inf')
+                for last_visit in last_visited_shared.values()
+            )
+            )
+
     
     final_average_idleness = total_idleness / total_took if total_took > 0 else 0
-    end_simulation(screen, FONT, final_average_idleness,agents,idleness_data)
+    end_simulation(screen, FONT, final_average_idleness, max_idleness,agents,idleness_data)

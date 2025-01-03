@@ -45,7 +45,9 @@ def agent_process_random(agent_id, agent_speed, nodes_position, edges, position_
     agent_node_index = 0
     path = []  # Chemin que l'agent doit suivre
     path_index = 0
-
+    for key in last_visited_shared.keys():
+        last_visited_shared[key] = time.time()
+        
     while not stop_simulation.value:
         # Si l'agent a atteint sa cible ou n'a pas de chemin à suivre
         if not path or path_index >= len(path):

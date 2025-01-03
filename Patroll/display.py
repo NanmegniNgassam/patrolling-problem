@@ -89,8 +89,8 @@ def scaling_nodes_position(nodes_position):
 def display_menu(screen):
     # Charger l'image de fond
     try:
-        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        background = pygame.image.load("image1.jpg")
+        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        #background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -101,8 +101,8 @@ def display_menu(screen):
     font_button = pygame.font.Font(None, 40)
 
     # Créer des boutons pour Multi-base et Mono-base
-    MULTI_BASE_BUTTON = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 100, 300, 50)
-    MONO_BASE_BUTTON = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2, 300, 50)
+    MULTI_BASE_BUTTON = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 + 50, 300, 50)
+    MONO_BASE_BUTTON = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2 - 35, 300, 50)
 
     running = True
     selected_mode = None
@@ -147,6 +147,8 @@ def display_menu(screen):
         return display_menu_monobase(screen)
     elif selected_mode == "Multi-base":
         return display_menu_multibase(screen)
+
+
     
 
 
@@ -156,8 +158,8 @@ def display_menu_monobase(screen):
 
     # Charger l'image de fond
     try:
-        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        background = pygame.image.load("image1.jpg")
+        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        #background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -175,7 +177,7 @@ def display_menu_monobase(screen):
     dropdown_open = False
     selected_map_index = 0
     # Options pour la météo
-    weather_options = ["Soleil", "Pluie"]
+    weather_options = ["Soleil", "Neige"]
     selected_weather_index = 0
 
     running = True
@@ -320,8 +322,8 @@ def display_menu_multibase(screen):
 
     # Charger l'image de fond
     try:
-        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        background = pygame.image.load("image1.jpg")
+        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        #background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -339,7 +341,7 @@ def display_menu_multibase(screen):
     dropdown_open = False
     selected_map_index = 0
     # Options pour la météo
-    weather_options = ["Soleil", "Pluie"]
+    weather_options = ["Soleil", "Neige"]
     selected_weather_index = 0
 
     running = True
@@ -360,7 +362,7 @@ def display_menu_multibase(screen):
 
         # Texte du bouton Multibase
         multiacocluster_text = font_button.render("M-ACO Cluster", True, BLACK)
-        genetique_text = font_button.render("Hybrid ACO", True, BLACK)
+        genetique_text = font_button.render("Multi ACO", True, BLACK)
 
         # Positionnement du texte pour Multibase
         screen.blit(multiacocluster_text, multiacocluster_text.get_rect(center=MULTIBASE_BUTTON.center))
@@ -460,7 +462,6 @@ def display_menu_multibase(screen):
                     chemins = generate_path_cluster_multibase(num_agents,nodes_position,edges)
 
                     return listmap[selected_map_index], "M-ACOCluster", num_agents, chemins, weather_options[selected_weather_index]
-
                 elif RANDOM_BUTTON.collidepoint(mouse_pos):
                     # Afficher un écran d'attente
                     screen.fill(WHITE)
@@ -468,13 +469,12 @@ def display_menu_multibase(screen):
                     waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
                     screen.blit(waiting_text, waiting_rect)
                     pygame.display.flip()
-
                     # Générer les chemins
                     nodes_position = scaling_nodes_position(maps[listmap[selected_map_index]]["nodes"])
                     edges = maps[listmap[selected_map_index]]["edges"]
                     chemins = generate_path_with_genetic(nodes_position, edges, num_agents)
 
-                    return listmap[selected_map_index], "Hybrid", num_agents, chemins, weather_options[selected_weather_index]
+                    return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
 
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
@@ -547,31 +547,37 @@ def display_graph_on_pygame(screen, idleness_data):
 
     # Calculer les positions pour centrer le graphique, avec un décalage vers le haut
     x_pos = (WIDTH - graph_width) // 2
-    y_pos = (HEIGHT - graph_height) // 2 + 0 # Décalage ajusté pour monter le graphique
+    y_pos = (HEIGHT - graph_height) // 2 + 20 # Décalage ajusté pour monter le graphique
 
     # Afficher le graphique dans Pygame
     screen.blit(surface, (x_pos, y_pos))  # Position centrée
     plt.close(fig)  # Fermer la figure pour libérer des ressources
 
 
-def end_simulation(screen, FONT, final_average_idleness, agents, idleness_data):
+def end_simulation(screen, FONT, final_average_idleness, max_idleness, agents, idleness_data):
     """
-    Affiche la fin de la simulation avec le graphique et l'oisiveté moyenne.
+    Affiche la fin de la simulation avec le graphique, l'oisiveté moyenne et maximale.
     :param screen: Surface Pygame
     :param FONT: Police pour le texte
     :param final_average_idleness: Oisiveté moyenne finale
+    :param max_idleness: Oisiveté maximale pendant la simulation
     :param agents: Liste des processus des agents
     :param idleness_data: Données d'oisiveté
     """
     screen.fill((255, 255, 255))  # Fond blanc
 
-    # Police agrandie pour "Oisiveté moyenne"
+    # Police agrandie pour "Oisiveté moyenne" et "Oisiveté maximale"
     large_font = pygame.font.Font(None, 40)  # Taille ajustée
 
     # Afficher "Oisiveté moyenne" en haut, au milieu
     idle_text = f"Oisiveté moyenne : {final_average_idleness:.2f}"
     idle_surface = large_font.render(idle_text, True, (0, 0, 0))  # Texte en noir
     screen.blit(idle_surface, (WIDTH // 2 - idle_surface.get_width() // 2, 10))  # Position en haut au milieu
+
+    # Afficher "Oisiveté maximale" juste en dessous de "Oisiveté moyenne"
+    max_idle_text = f"Oisiveté maximale : {max_idleness:.2f}"
+    max_idle_surface = large_font.render(max_idle_text, True, (0, 0, 0))  # Texte en noir
+    screen.blit(max_idle_surface, (WIDTH // 2 - max_idle_surface.get_width() // 2, 60))  # Position ajustée
 
     # Dessiner un bouton "Quitter" en bas de l'écran
     quit_button_rect = pygame.Rect(WIDTH - 100, HEIGHT - 40, 80, 30)
@@ -600,6 +606,7 @@ def end_simulation(screen, FONT, final_average_idleness, agents, idleness_data):
         agent.join()
 
     pygame.quit()
+
 
 def calculate_node_color(last_visit_time):
     if last_visit_time is None or last_visit_time == 0:
@@ -631,7 +638,7 @@ def calculate_average_idleness(last_visited):
 
 def modify_nodes_with_costs(nodes, increase_factor_range=(1.05, 1.2), percentage=0.2):
     """
-    Modifie les positions des nœuds pour simuler un coût accru en pluie.
+    Modifie les positions des nœuds pour simuler un coût accru en neige.
 
     :param nodes: Liste des positions des nœuds [(x1, y1), (x2, y2), ...].
     :param increase_factor_range: Plage pour augmenter les distances des nœuds.
