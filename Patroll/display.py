@@ -307,7 +307,7 @@ def display_menu_monobase(screen):
                     edges = maps[listmap[selected_map_index]]["edges"]
                     chemins = generate_path_cluster_monobase(num_agents,nodes_position,edges,num_loop)
                     print("Les agents vont effectuer ce nombre de rond avant de rentrer à la caserne:", num_loop)
-                    return listmap[selected_map_index], "M-ACOCluster", num_agents, chemins, weather_options[selected_weather_index]
+                    return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
 
                 elif minus_button_rect.collidepoint(mouse_pos) and num_agents > 1:
                     num_agents -= 1
@@ -461,7 +461,7 @@ def display_menu_multibase(screen):
                     edges = maps[listmap[selected_map_index]]["edges"]
                     chemins = generate_path_cluster_multibase(num_agents,nodes_position,edges)
 
-                    return listmap[selected_map_index], "M-ACOCluster", num_agents, chemins, weather_options[selected_weather_index]
+                    return listmap[selected_map_index], "ACO", num_agents, chemins, weather_options[selected_weather_index]
                 elif RANDOM_BUTTON.collidepoint(mouse_pos):
                     # Afficher un écran d'attente
                     screen.fill(WHITE)
@@ -635,6 +635,12 @@ def calculate_average_idleness(last_visited):
 
     return total_idleness / node_count if node_count > 0 else 0
 
+def calculate_max_idleness(last_visited_shared):
+    current_time = time.time()
+    return max(
+        current_time - last_visit if last_visit is not None else float('inf')
+        for last_visit in last_visited_shared.values()
+    )
 
 def modify_nodes_with_costs(nodes, increase_factor_range=(1.05, 1.2), percentage=0.2):
     """

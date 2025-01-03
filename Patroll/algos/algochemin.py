@@ -12,8 +12,7 @@ def agent_process_chemins(agent_id, agent_speed, nodes_position, position_queue,
     agent_position = nodes_position[chemin[0]]
     agent_target_position = nodes_position[chemin[1]]
     agent_node_index = chemin[0]
-    for key in last_visited_shared.keys():
-        last_visited_shared[key] = time.time()
+
     
     i = 0
     while not stop_simulation.value:

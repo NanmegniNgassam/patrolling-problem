@@ -39,7 +39,7 @@ if __name__ == '__main__':
     agent_positions = manager.list([initial_node] * num_agents)
     node_locked = manager.dict({i: False for i in range(len(nodes_position))})
     stop_simulation = manager.Value('b', False)  # 'b' pour booléen
-    last_visited_shared = manager.dict({i: None for i in range(len(nodes_position))})
+    last_visited_shared = manager.dict({i: time.time() for i in range(len(nodes_position))})
 
     for i in range(num_agents):
         position_queue = multiprocessing.Queue()
@@ -50,8 +50,7 @@ if __name__ == '__main__':
             agent = multiprocessing.Process(target=agent_process_runtime, args=(i,agent_speed,nodes_position,edges, num_agents,position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation))
         elif algorithm == "ACO":
             agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
-        elif algorithm == "M-ACOCluster":
-            agent = multiprocessing.Process(target=agent_process_chemins, args=(i,agent_speed, nodes_position, position_queue, chemins[i], last_visited_shared,stop_simulation))
+
         agents.append(agent)    
         agent.start()
 
@@ -82,13 +81,7 @@ if __name__ == '__main__':
         idleness_data.append(current_idleness)
         total_idleness += current_idleness  # Ajouter l'oisiveté du moment
         total_took += 1  # Incrémenter le nombre de prise d'info
-        current_time = time.time()
-        max_idleness = max(max_idleness,  # La valeur maximale précédente
-            max(
-                current_time - last_visit if last_visit is not None else float('inf')
-                for last_visit in last_visited_shared.values()
-            )
-            )
+        max_idleness = calculate_max_idleness(last_visited_shared)
 
     
     final_average_idleness = total_idleness / total_took if total_took > 0 else 0

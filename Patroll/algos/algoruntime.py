@@ -40,9 +40,8 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
     agent_target_position = nodes_position[1]  # Première cible
     agent_node_index = 0
     next_node_index = 0
-    for key in last_visited_shared.keys():
-        last_visited_shared[key] = time.time()
-        
+
+
     while not stop_simulation.value:
         x1, y1 = agent_position
         x2, y2 = agent_target_position
