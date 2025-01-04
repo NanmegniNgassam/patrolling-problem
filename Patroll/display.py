@@ -316,7 +316,7 @@ def display_menu_monobase(screen):
                 elif cluster_button_rect.collidepoint(mouse_pos):
                     # Logique pour le bouton Multi-ACO Cluster
                     # Afficher un écran d'attente
-                    num_loop = 5
+                    #num_loop = 5
                     screen.fill(WHITE)
                     waiting_text = font_waiting.render("Génération des chemins, veuillez patienter...", True, BLACK)
                     waiting_rect = waiting_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
@@ -335,8 +335,10 @@ def display_menu_monobase(screen):
                     num_agents += 1
                 elif minus_button_loop.collidepoint(mouse_pos) and num_loop >= 0:
                     num_loop -= 1
+                    print("Num loop =", num_loop)
                 elif plus_button_loop.collidepoint(mouse_pos) and num_loop < 30:
                     num_loop += 1
+                    print("Num loop =", num_loop)
 
 
 def display_menu_multibase(screen):

@@ -37,7 +37,7 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
         adjacency_list[b].append(a)
 
     agent_position = nodes_position[0]  # Position initiale
-    agent_target_position = nodes_position[1]  # Première cible
+    agent_target_position = nodes_position[0]  # Première cible
     agent_node_index = 0
     next_node_index = 0
 
@@ -124,7 +124,7 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
                                     print("chemin que je transfere",transferttt)
                                     shared_list_chemins[closest_agent_id] = transferttt
                             else:
-                                print("jsuis deja occupé akhy")
+                                print("jsuis deja occupé")
                         else:
                             # Calculer le chemin le plus court vers ce nœud
                             monchemin = shortest_path(adjacency_list, agent_node_index, max_idleness_node)
