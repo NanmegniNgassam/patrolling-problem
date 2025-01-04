@@ -89,8 +89,8 @@ def scaling_nodes_position(nodes_position):
 def display_menu(screen):
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        #background = pygame.image.load("image1.jpg")
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -155,11 +155,12 @@ def display_menu(screen):
 def display_menu_monobase(screen):
     # Nombre d'agents (initialement 3)
     num_agents = 3
+    num_loop = 5
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        #background = pygame.image.load("image1.jpg")
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -222,12 +223,28 @@ def display_menu_monobase(screen):
         agents_rect = agents_text.get_rect(center=(150, HEIGHT // 2 + 5))  # Inchangé
         screen.blit(agents_text, agents_rect)
 
+        # Section choix du nombre d'agents (ajustée vers le haut)
+        label_text_loops = font_label.render("Nombre de patrouille", True, BLACK)
+        label_rect_loops = label_text_loops.get_rect(center=(150, HEIGHT // 2 - 140))  # Remonté pour être bien au-dessus
+        screen.blit(label_text_loops, label_rect_loops)
+
+        loops_text = font_label.render(f"{num_loop}", True, BLACK)
+        loops_rect = loops_text.get_rect(center=(150, HEIGHT // 2 - 100))  # Position pour aligner avec les boutons
+        screen.blit(loops_text, loops_rect)
+
+        # Boutons + et - (remontés de 10 pixels)
+        minus_button_loop = pygame.Rect(90, HEIGHT // 2 - 120, 40, 40)  # Bouton "-" ajusté
+        plus_button_loop = pygame.Rect(170, HEIGHT // 2 - 120, 40, 40)  # Bouton "+" ajusté
+
         # Boutons + et - (remontés de 10 pixels)
         minus_button_rect = pygame.Rect(90, HEIGHT // 2 + 25, 40, 40)  # Bouton "-" ajusté
         plus_button_rect = pygame.Rect(170, HEIGHT // 2 + 25, 40, 40)  # Bouton "+" ajusté
 
         pygame.draw.rect(screen, DARK_BLUE, minus_button_rect)
         pygame.draw.rect(screen, DARK_BLUE, plus_button_rect)
+
+        pygame.draw.rect(screen, DARK_BLUE, minus_button_loop)
+        pygame.draw.rect(screen, DARK_BLUE, plus_button_loop)
 
         # Texte des boutons
         minus_text = font_button.render("-", True, WHITE)
@@ -236,6 +253,9 @@ def display_menu_monobase(screen):
         screen.blit(minus_text, minus_text.get_rect(center=minus_button_rect.center))
         screen.blit(plus_text, plus_text.get_rect(center=plus_button_rect.center))
 
+        screen.blit(minus_text, minus_text.get_rect(center=minus_button_loop.center))
+        screen.blit(plus_text, plus_text.get_rect(center=plus_button_loop.center))
+        
         # Menu déroulant map (placé à droite)
         dropdown_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45, 200, 40)  # Nouvelle position à droite
         pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
@@ -313,17 +333,20 @@ def display_menu_monobase(screen):
                     num_agents -= 1
                 elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 10:
                     num_agents += 1
+                elif minus_button_loop.collidepoint(mouse_pos) and num_loop >= 0:
+                    num_loop -= 1
+                elif plus_button_loop.collidepoint(mouse_pos) and num_loop < 30:
+                    num_loop += 1
 
 
 def display_menu_multibase(screen):
     # Nombre d'agents (initialement 3)
     num_agents = 3
-    num_loop = 5
 
     # Charger l'image de fond
     try:
-        background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
-        #background = pygame.image.load("image1.jpg")
+        #background = pygame.image.load("patrolling-problem\\Patroll\\image1.jpg")
+        background = pygame.image.load("image1.jpg")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         screen.blit(background, (0, 0))
     except pygame.error as e:
@@ -377,28 +400,12 @@ def display_menu_multibase(screen):
         agents_rect = agents_text.get_rect(center=(150, HEIGHT // 2 + 5))  # Inchangé
         screen.blit(agents_text, agents_rect)
 
-        # Section choix du nombre d'agents (ajustée vers le haut)
-        label_text_loops = font_label.render("Nombre de patrouille", True, BLACK)
-        label_rect_loops = label_text_loops.get_rect(center=(150, HEIGHT // 2 - 140))  # Remonté pour être bien au-dessus
-        screen.blit(label_text_loops, label_rect_loops)
-
-        loops_text = font_label.render(f"{num_loop}", True, BLACK)
-        loops_rect = loops_text.get_rect(center=(150, HEIGHT // 2 - 100))  # Position pour aligner avec les boutons
-        screen.blit(loops_text, loops_rect)
-
         # Boutons + et - (remontés de 10 pixels)
         minus_button_rect = pygame.Rect(90, HEIGHT // 2 - 15, 40, 40)  # Bouton "-" ajusté
         plus_button_rect = pygame.Rect(170, HEIGHT // 2 - 15, 40, 40)  # Bouton "+" ajusté
 
-        # Boutons + et - (remontés de 10 pixels)
-        minus_button_loop = pygame.Rect(90, HEIGHT // 2 - 120, 40, 40)  # Bouton "-" ajusté
-        plus_button_loop = pygame.Rect(170, HEIGHT // 2 - 120, 40, 40)  # Bouton "+" ajusté
-
         pygame.draw.rect(screen, DARK_BLUE, minus_button_rect)
         pygame.draw.rect(screen, DARK_BLUE, plus_button_rect)
-
-        pygame.draw.rect(screen, DARK_BLUE, minus_button_loop)
-        pygame.draw.rect(screen, DARK_BLUE, plus_button_loop)
 
         # Texte des boutons
         minus_text = font_button.render("-", True, WHITE)
@@ -407,8 +414,6 @@ def display_menu_multibase(screen):
         screen.blit(minus_text, minus_text.get_rect(center=minus_button_rect.center))
         screen.blit(plus_text, plus_text.get_rect(center=plus_button_rect.center))
 
-        screen.blit(minus_text, minus_text.get_rect(center=minus_button_loop.center))
-        screen.blit(plus_text, plus_text.get_rect(center=plus_button_loop.center))
         # Menu déroulant map (placé à droite)
         dropdown_rect = pygame.Rect(WIDTH - 250, HEIGHT // 2 - 45, 200, 40)  # Nouvelle position à droite
         pygame.draw.rect(screen, LIGHT_BLUE, dropdown_rect)
@@ -481,10 +486,6 @@ def display_menu_multibase(screen):
                     num_agents -= 1
                 elif plus_button_rect.collidepoint(mouse_pos) and num_agents < 10:
                     num_agents += 1
-                elif minus_button_loop.collidepoint(mouse_pos) and num_loop > 2:
-                    num_loop -= 1
-                elif plus_button_loop.collidepoint(mouse_pos) and num_loop < 10:
-                    num_loop += 1
 
 
 def display_graph(screen, FONT, nodes_position, edges, last_visited_shared,num_agents,position_queues,agent_positions):
