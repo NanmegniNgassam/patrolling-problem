@@ -60,7 +60,7 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
 
             # Décision cognitive : vérifier si on doit aller vers un nœud éloigné avec grande oisiveté
             if not shared_list_chemins[agent_id] and num_agents != 1:  # Si l'agent n'a pas encore de chemin à suivre
-                if random.random() < 0.04: 
+                if random.random() < 0.1: 
                     with lock:
                         # Calculer le nœud avec la plus grande oisiveté
                         max_idleness_node = max(
