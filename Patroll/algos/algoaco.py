@@ -123,32 +123,12 @@ def generate_path_with_genetic(nodes_position, edges, num_agents):
     nodes, graph, distance_matrix = aco_parameters_with_genetic(nodes_position, edges, num_agents)
     for node in nodes :
         path, best_lenth=aco_tsp(distance_matrix, node, graph, 1)
-        print(f"path: {path}")
-        #path = path[0]
         path = path[0]
-        print(f"Vrai path: {path}")
         is_valid = validate_path(graph, path)
         if not is_valid:
             path = correct_path(graph, path)
-        print(f"Chemin trouvé : {path}")
-
-        #for i in range(len(path)):
-            #is_valid = validate_path(graph, path[i])
-            #if not is_valid:
-            #    path[i] = correct_path(graph, path[i])
-        #print(f"Chemin trouvé : {path}")
-        #path = path[0]
         all_path.append(path)
         print(f"path: {path}")
-
-        # Aplatir le chemin pour éviter les listes imbriquées
-        #flattened_path = [node for sublist in path for node in (sublist if isinstance(sublist, list) else [sublist])]
-        
-        #print(f"Chemin après validation et aplatissement : {flattened_path}")
-
-        # Ajouter le chemin à la liste globale
-        #all_path.extend(flattened_path)  # Utilise extend pour ajouter directement les nœuds à la liste plate
-        #print(f"Chemin accumulé : {all_path}")
     return all_path
 
 # Fonction : Calculer les poids des arêtes

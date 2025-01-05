@@ -256,9 +256,9 @@ def create_node_mappings(nodes_in_cluster):
     """
     # Création des dictionnaires de correspondance
     original_to_reduced = {node: i for i, node in enumerate(nodes_in_cluster)}
-    print("Original to Reduced Mapping:", original_to_reduced)
+    #print("Original to Reduced Mapping:", original_to_reduced)
     reduced_to_original = {i: node for i, node in enumerate(nodes_in_cluster)}
-    print("Reduced to Original Mapping:", reduced_to_original)
+    #print("Reduced to Original Mapping:", reduced_to_original)
     return original_to_reduced, reduced_to_original
 
 
@@ -276,8 +276,8 @@ def rearrange_matrix_by_mapping(matrix, original_to_reduced):
     # Nombre de nœuds dans le cluster
     n_nodes = len(original_to_reduced)
 
-    print(matrix)
-    print(original_to_reduced)
+    #print(matrix)
+    #print(original_to_reduced)
 
     # Créer une matrice vide pour le résultat
     rearranged_matrix = np.zeros((n_nodes, n_nodes))
@@ -376,7 +376,7 @@ def find_nearest_node_in_cluster_to_global_node_0(graph, cluster_id, clusters):
         except nx.NetworkXNoPath:
             continue  # Ignorer les nœuds sans chemin vers le nœud 0
     
-    print("Noeud le plus proche:", nearest_node)
+    #print("Noeud le plus proche:", nearest_node)
 
     return nearest_node
 
@@ -403,12 +403,12 @@ def generate_path_cluster_multibase(num_agents, nodes_position, edges):
 
         start_local= get_local_node_id(end, original_to_reduced)
 
-        print("nodes_in_cluster :", nodes_in_cluster)
-        print("original_to_reduced :", original_to_reduced)
-        print("reduced_to_original :", reduced_to_original)
+        #print("nodes_in_cluster :", nodes_in_cluster)
+        #print("original_to_reduced :", original_to_reduced)
+        #print("reduced_to_original :", reduced_to_original)
         #transformer les edges en edges local avec les bonnes nodes
         rearranged_edges = rearrange_edges_by_mapping(edges_in_cluster, original_to_reduced)
-        print("edges_in_cluster :", rearranged_edges)
+        #print("edges_in_cluster :", rearranged_edges)
         subgraph = build_weighted_subgraph(nodes_in_cluster, rearranged_edges)
 
         distance_matrix_cluster = compute_weighted_distance_matrix(subgraph)
@@ -419,7 +419,7 @@ def generate_path_cluster_multibase(num_agents, nodes_position, edges):
             is_valid = validate_path(subgraph, path[i])
             if not is_valid:
                 path[i] = correct_path(subgraph, path[i])
-        print(f"Chemin trouvé : {path}")
+        #print(f"Chemin trouvé : {path}")
 
         #original_path = map_path_to_original(path, reduced_to_original)
         original_path = [reduced_to_original[reduced_index] for reduced_index in path[0]]
@@ -427,7 +427,7 @@ def generate_path_cluster_multibase(num_agents, nodes_position, edges):
         chemin_complet = original_path
         all_paths.append(chemin_complet)
 
-        print(f"Chemin complet pour cluster {cluster_id} : {chemin_complet}")
+        #print(f"Chemin complet pour cluster {cluster_id} : {chemin_complet}")
 
 
     return all_paths
@@ -438,7 +438,7 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
     clusters, cluster_weights, barycenters, nearest_nodes = generate_clusters(
         graph, nodes_position, num_agents, tolerance=0.25
     )
-    print("les clusters :", clusters)
+    #print("les clusters :", clusters)
     all_paths = []
     for cluster_id in range(num_agents):
         
@@ -447,9 +447,9 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
         chemin_agent_vers_zero = nx.shortest_path(graph, source=nearest_node_to_zero, target= 0, weight="weight")
 
         nodes_in_cluster, edges_in_cluster = extract_cluster_nodes_and_edges(graph, nodes_position, clusters, cluster_id)
-        print("les noeuds clusters :", clusters)
+        #print("les noeuds clusters :", clusters)
         nodes_in_cluster_id= extract_nodes(clusters, cluster_id)
-        print("les noeuds clusters :", nodes_in_cluster_id)
+        #print("les noeuds clusters :", nodes_in_cluster_id)
         original_to_reduced, reduced_to_original = create_node_mappings(nodes_in_cluster_id)
 
         start_local= get_local_node_id(nearest_node_to_zero, original_to_reduced)
@@ -471,7 +471,7 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
             is_valid = validate_path(subgraph, path[i])
             if not is_valid:
                 path[i] = correct_path(subgraph, path[i])
-        print(f"Chemin trouvé : {path}")
+        #print(f"Chemin trouvé : {path}")
         original_path = [reduced_to_original[reduced_index] for reduced_index in path[0]]
         
         repeated_paths = original_path * loop_number
@@ -485,7 +485,7 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
         chemin_complet = chemin_agent_vers_cluster + repeated_paths + chemin_agent_vers_zero
         all_paths.append(chemin_complet)
 
-        print(f"Chemin complet pour cluster {cluster_id} : {chemin_complet}")
+        #print(f"Chemin complet pour cluster {cluster_id} : {chemin_complet}")
 
 
     return all_paths

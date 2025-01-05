@@ -99,7 +99,7 @@ def generate_path_with_genetic():
         is_valid = validate_path(graph, path)
         if not is_valid:
             path = correct_path(graph, path)
-        print(f"Chemin trouvé : {path}")
+        #print(f"Chemin trouvé : {path}")
         all_path.append(path)
     return all_path
 
@@ -114,10 +114,8 @@ def generate_path():
         is_valid = validate_path(graph, path)
         if not is_valid:
             path = correct_path(graph, path)
-        print(f"Chemin trouvé : {path}")
+        #print(f"Chemin trouvé : {path}")
         all_path.append(path)
     return all_path
 
 
-test = generate_path_with_genetic()
-print(test)

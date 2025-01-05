@@ -68,8 +68,8 @@ def balanced_weighted_kmeans(distance_matrix, graph, n_clusters, tolerance=0.25,
         min_weight = min(cluster_weights)
         difference = (max_weight - min_weight) / max_weight
 
-        print(
-            f"Iteration {iteration + 1}: Max weight = {max_weight:.2f}, Min weight = {min_weight:.2f}, Difference = {difference:.2%}")
+        #print(
+        #    f"Iteration {iteration + 1}: Max weight = {max_weight:.2f}, Min weight = {min_weight:.2f}, Difference = {difference:.2%}")
 
         # Mettre à jour la meilleure solution si elle est meilleure
         if difference < best_difference:
@@ -79,10 +79,10 @@ def balanced_weighted_kmeans(distance_matrix, graph, n_clusters, tolerance=0.25,
 
         # Arrêter si la contrainte est respectée
         if difference <= tolerance:
-            print("Contrainte respectée : différence de poids < 25 %")
+            #print("Contrainte respectée : différence de poids < 25 %")
             return clusters, cluster_weights
 
-    print("Max iterations atteintes, meilleure solution approximative utilisée.")
+    #print("Max iterations atteintes, meilleure solution approximative utilisée.")
     return best_clusters, best_weights
 
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
     # Afficher les poids des clusters avec leurs couleurs
     colors = ['red', 'blue', 'green', 'orange', 'purple', 'cyan']
-    print("\nPoids des clusters par couleur :")
+    #print("\nPoids des clusters par couleur :")
     for i, weight in enumerate(cluster_weights):
         print(f"Cluster {colors[i % len(colors)]} : {weight:.2f}")
 

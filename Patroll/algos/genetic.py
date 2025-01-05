@@ -136,7 +136,7 @@ def genetic_algorithm(distance_matrix, nodes_position, num_agents):
 
         # Suivi de la meilleure solution de la génération
         best_individual = max(population, key=lambda individual: fitness(individual, distance_matrix, nodes_position))
-        print(f"Génération {generation + 1}: Meilleure fitness = {fitness(best_individual, distance_matrix, nodes_position)}")
+        #print(f"Génération {generation + 1}: Meilleure fitness = {fitness(best_individual, distance_matrix, nodes_position)}")
 
     return best_individual
 
@@ -147,8 +147,8 @@ def aco_parameters_with_genetic(nodes_position, edges, num_agents):
     graph = build_weighted_graph(nodes_position, edges)
     distance_matrix = compute_weighted_distance_matrix(graph)
     best_solution = genetic_algorithm(distance_matrix, nodes_position, num_agents)
-    print("Meilleure solution:", best_solution)
-    print("Fitness de la meilleure solution:", fitness(best_solution, distance_matrix, nodes_position))
+    #print("Meilleure solution:", best_solution)
+    #print("Fitness de la meilleure solution:", fitness(best_solution, distance_matrix, nodes_position))
     
     nodes=[]
     for i in range(len(best_solution)):

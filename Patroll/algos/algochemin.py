@@ -2,7 +2,6 @@ import random
 import math
 import time
 from display import *
-from collections import deque  # Pour BFS
 from config import agent_speed, FPS
 
 
@@ -31,7 +30,7 @@ def agent_process_chemins(agent_id, agent_speed, nodes_position, position_queue,
             i += 1
             if i >= len(chemin):  # Si la fin du chemin est atteinte
                 i = 0  # Recommence depuis le début
-                print(f"Agent {agent_id}: Redémarre le chemin.")
+                #print(f"Agent {agent_id}: Redémarre le chemin.")
             next_node_index = chemin[i]
             agent_target_position = nodes_position[next_node_index]
             

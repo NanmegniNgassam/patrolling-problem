@@ -91,8 +91,8 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
 
                     # 
                     if max_idleness_value > 10:
-                        print("Je prends une décision cognitive, Signé agent", agent_id)
-                        print("Nœud avec la plus grande oisiveté :", max_idleness_node, "Oisiveté :", max_idleness_value)
+                        #print("Je prends une décision cognitive, Signé agent", agent_id)
+                        #print("Nœud avec la plus grande oisiveté :", max_idleness_node, "Oisiveté :", max_idleness_value)
 
                         # Verrouiller le nœud
                         node_locked[max_idleness_node] = True
@@ -102,7 +102,6 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
                         my_x, my_y = agent_position
                         closest_distance = math.hypot(nodes_position[max_idleness_node][0] - my_x,
                                                     nodes_position[max_idleness_node][1] - my_y)
-                        #print("distance,", closest_distance)
                         for other_agent_id in range(agent_id):
                             if other_agent_id != agent_id:
                                 other_agent_position = agent_positions[other_agent_id]
@@ -112,8 +111,6 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
                                 if distance_to_max_node < closest_distance:
                                     closest_distance = distance_to_max_node
                                     closest_agent_id = other_agent_id
-                        #print("agent plus proche", closest_agent_id)
-                        #print("distance,", closest_distance)
 
                         # Si un agent est plus proche
                         if closest_agent_id != agent_id:
@@ -121,7 +118,6 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
                                 with lock:
                                     print(f"Agent {agent_id} transfère le chemin à l'agent {closest_agent_id}")
                                     transferttt = shortest_path(adjacency_list, shared_list_next_node[closest_agent_id], max_idleness_node)
-                                    print("chemin que je transfere",transferttt)
                                     shared_list_chemins[closest_agent_id] = transferttt
                             else:
                                 print("jsuis deja occupé")
@@ -172,7 +168,7 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
                     shared_list_next_node[agent_id] = next_node_index
 
             agent_target_position = nodes_position[next_node_index]
-            print(f"AGENT {agent_id}, Je suis actuellement au noeud {agent_node_index}, Mon chemin pour y aller : {shared_list_next_node[agent_id]}")
+            #print(f"AGENT {agent_id}, Je suis actuellement au noeud {agent_node_index}, Mon chemin pour y aller : {shared_list_next_node[agent_id]}")
 
         else:
             # Mouvement vers la cible
