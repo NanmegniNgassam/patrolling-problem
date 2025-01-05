@@ -5,9 +5,9 @@ from algos.genetic import aco_parameters_with_genetic
 
 
 # ALGORITHME ACO
-def initialize_pheromones(num_cities, tau_0=1.0):
+def initialize_pheromones(num_nodes, tau_0=1.0):
     """Initialise la matrice de phéromones."""
-    return np.full((num_cities, num_cities), tau_0)
+    return np.full((num_nodes, num_nodes), tau_0)
 
 def calculate_visibility(distance_matrix):
     """Calcule la matrice de visibilité (1 / distance)."""
@@ -16,39 +16,38 @@ def calculate_visibility(distance_matrix):
         visibility[distance_matrix == 0] = 0
     return visibility
 
-def select_next_city(current_city, allowed_cities, pheromones, visibility, alpha, beta, graph):
-    """Sélectionne la prochaine ville en fonction des probabilités."""
+def select_next_node(current_node, allowed_nodes, pheromones, visibility, alpha, beta, graph):
+    """Sélectionne le prochain noeud en fonction des probabilités."""
     probs = []
-    allowed_cities_accessible = []
-    for city in allowed_cities:
-        if graph.has_edge(current_city, city):
-            prob = (pheromones[current_city, city] ** alpha) * (visibility[current_city, city] ** beta)
+    allowed_nodes_accessible = []
+    for node in allowed_nodes:
+        if graph.has_edge(current_node, node):
+            prob = (pheromones[current_node, node] ** alpha) * (visibility[current_node, node] ** beta)
             probs.append(prob)
-            allowed_cities_accessible.append(city)
+            allowed_nodes_accessible.append(node)
     if len(probs)==0:
-        for city in allowed_cities:
-            prob = (pheromones[current_city, city] ** alpha) * (visibility[current_city, city] ** beta)
+        for node in allowed_nodes:
+            prob = (pheromones[current_node, node] ** alpha) * (visibility[current_node, node] ** beta)
             probs.append(prob)
-            allowed_cities_accessible.append(city)
+            allowed_nodes_accessible.append(node)
 
     probs = np.array(probs) / sum(probs)  # Normalisation
-    return np.random.choice(allowed_cities_accessible, p=probs)
+    return np.random.choice(allowed_nodes_accessible, p=probs)
 
-def construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph,num_agents):
+def construct_solution(num_nodes, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph,num_agents):
     """Construit un chemin pour une fourmi en partant du nœud spécifié."""
     solution = [[start_node] for _ in range(num_agents)]
-    allowed_cities = [c for c in range(num_cities)]
-    #for _ in range(num_cities - 1):
-    while len(allowed_cities)>1:
+    allowed_nodes = [c for c in range(num_nodes)]
+    while len(allowed_nodes)>1:
         for agent in range(num_agents):
-            if len(allowed_cities) >1:
-                current_city = solution[agent][-1]
+            if len(allowed_nodes) >1:
+                current_node = solution[agent][-1]
 
                 nodes_visites = list(set(element for sous_liste in solution for element in sous_liste))
-                allowed_cities = [c for c in range(num_cities) if c not in nodes_visites]
+                allowed_nodes = [c for c in range(num_nodes) if c not in nodes_visites]
 
-                next_city = select_next_city(current_city, allowed_cities, pheromones, visibility, alpha, beta, graph)
-                solution[agent].append(next_city)
+                next_node = select_next_node(current_node, allowed_nodes, pheromones, visibility, alpha, beta, graph)
+                solution[agent].append(next_node)
     for chemin_individuel in solution:
         chemin_individuel.append(start_node) # Retour au nœud de départ
     return solution 
@@ -69,8 +68,8 @@ def update_pheromones(pheromones, solutions, distances, rho, Q,num_agents):
 
 def aco_tsp(distance_matrix, start_node, graph, num_agents, num_ants=100, num_iterations=100, alpha=1.0, beta=2.0, rho=0.5, Q=100):
     """Algorithme principal ACO pour le TSP."""
-    num_cities = distance_matrix.shape[0]
-    pheromones = initialize_pheromones(num_cities)
+    num_nodes = distance_matrix.shape[0]
+    pheromones = initialize_pheromones(num_nodes)
     visibility = calculate_visibility(distance_matrix)
     best_solution = None
     best_length = float('inf')
@@ -78,7 +77,7 @@ def aco_tsp(distance_matrix, start_node, graph, num_agents, num_ants=100, num_it
     for _ in tqdm(range(num_iterations), desc="Optimizing"):
         solutions = []
         for _ in range(num_ants):
-            solution = construct_solution(num_cities, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph,num_agents)
+            solution = construct_solution(num_nodes, distance_matrix, pheromones, visibility, alpha, beta, start_node, graph,num_agents)
             solutions.append(solution)
 
         for solution in solutions:

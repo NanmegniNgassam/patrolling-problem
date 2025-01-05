@@ -6,7 +6,6 @@ from display import *
 from algos.algorandom import *
 from algos.algoruntime import *
 from algos.algochemin import *
-from algos.algoaco import generate_path
 from algos.algoacoclustering import *
 
 if __name__ == '__main__':
@@ -25,10 +24,10 @@ if __name__ == '__main__':
         nodes_position = scaling_nodes_position(modify_nodes_with_costs(nodes_position))
         agent_speed = 4
 
-    # Utiliser un dictionnaire partagé pour `last_visited`
+    # Utiliser un dictionnaire partagé
     manager = multiprocessing.Manager()
-    # Create a shared list with three elements
-    shared_list_next_node = manager.list([0] * num_agents)  # Shared list initialized to [0, 0, 0]
+    # Create a shared list
+    shared_list_next_node = manager.list([0] * num_agents)  # Shared list initialized 
     shared_list_chemins = manager.list([None] * num_agents)
     lock = multiprocessing.Lock()  # Lock to avoid concurrent writes
     # Création des files de communication et des processus pour chaque agent

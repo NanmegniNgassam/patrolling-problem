@@ -2,15 +2,9 @@ import networkx as nx
 import numpy as np
 from sklearn.cluster import KMeans
 from algos.algoaco import correct_path, validate_path, aco_tsp
-
 import time
 
-#from graphstructure import nodes_position, edges
-#from algos.algorandom import *
-
-
 start_node_aco = 0  # Exemple : définir le nœud de départ comme le nœud 0
-
 
 # Fonction : Calculer les poids des arêtes
 def calculate_edge_weights(nodes_position, edges):
@@ -23,7 +17,6 @@ def calculate_edge_weights(nodes_position, edges):
         weighted_edges.append((u, v, weight))
     return weighted_edges
 
-
 # Construire un graphe pondéré
 def build_weighted_graph(nodes_position, edges):
     weighted_edges = calculate_edge_weights(nodes_position, edges)
@@ -35,14 +28,8 @@ def build_weighted_graph(nodes_position, edges):
 
 # Fonction : Calculer les poids des arêtes
 def calculate_edge_weights_sub(nodes_position, edges):
-    #print("Taille de nodes_position :", len(nodes_position))
     weighted_edges = []
-    #print("nodes_position :", nodes_position)
     for u, v in edges:
-        #print("U :", u)
-        #print("V :", v)
-        #print("nodes_position U:", nodes_position[u])
-        #print("nodes_position V:", nodes_position[v])
         x_u, y_u = nodes_position[u]
         x_v, y_v = nodes_position[v]
         weight = np.sqrt((x_u - x_v) ** 2 + (y_u - y_v) ** 2)
@@ -188,17 +175,6 @@ def extract_cluster_nodes_and_edges(graph, nodes_position, clusters, cluster_id)
     return nodes_in_cluster, edges_in_cluster
 
 def compute_cluster_distance_matrix(graph, clusters, cluster_id):
-    """
-    Calcule la matrice des distances pondérées pour un cluster donné.
-
-    Args:
-        graph (networkx.Graph): Le graphe global.
-        clusters (list): Liste des identifiants de cluster pour chaque nœud.
-        cluster_id (int): L'identifiant du cluster.
-
-    Returns:
-        numpy.ndarray: Matrice des distances pondérées pour le cluster.
-    """
     # Extraire les nœuds appartenant au cluster
     nodes_in_cluster = [i for i, label in enumerate(clusters) if label == cluster_id]
 
@@ -228,12 +204,6 @@ def extract_nodes(clusters, cluster_id):
     return nodes_in_cluster
 
 def remove_consecutive_duplicates(path):
-    """
-    Supprime les doublons consécutifs dans un chemin tout en conservant l'ordre.
-    
-    :param path: Liste de nœuds représentant un chemin.
-    :return: Liste de nœuds sans doublons consécutifs.
-    """
     if not path:
         return []
     cleaned_path = [path[0]]
@@ -275,9 +245,6 @@ def rearrange_matrix_by_mapping(matrix, original_to_reduced):
     """
     # Nombre de nœuds dans le cluster
     n_nodes = len(original_to_reduced)
-
-    #print(matrix)
-    #print(original_to_reduced)
 
     # Créer une matrice vide pour le résultat
     rearranged_matrix = np.zeros((n_nodes, n_nodes))
@@ -384,7 +351,7 @@ def find_nearest_node_in_cluster_to_global_node_0(graph, cluster_id, clusters):
 
 
 
-    # Renvoie le chemin de l'ACO 
+# Renvoie le chemin de l'ACO 
 def generate_path_cluster_multibase(num_agents, nodes_position, edges):
 
     graph = build_weighted_graph(nodes_position, edges)
@@ -403,12 +370,8 @@ def generate_path_cluster_multibase(num_agents, nodes_position, edges):
 
         start_local= get_local_node_id(end, original_to_reduced)
 
-        #print("nodes_in_cluster :", nodes_in_cluster)
-        #print("original_to_reduced :", original_to_reduced)
-        #print("reduced_to_original :", reduced_to_original)
-        #transformer les edges en edges local avec les bonnes nodes
+
         rearranged_edges = rearrange_edges_by_mapping(edges_in_cluster, original_to_reduced)
-        #print("edges_in_cluster :", rearranged_edges)
         subgraph = build_weighted_subgraph(nodes_in_cluster, rearranged_edges)
 
         distance_matrix_cluster = compute_weighted_distance_matrix(subgraph)
@@ -419,15 +382,11 @@ def generate_path_cluster_multibase(num_agents, nodes_position, edges):
             is_valid = validate_path(subgraph, path[i])
             if not is_valid:
                 path[i] = correct_path(subgraph, path[i])
-        #print(f"Chemin trouvé : {path}")
 
-        #original_path = map_path_to_original(path, reduced_to_original)
         original_path = [reduced_to_original[reduced_index] for reduced_index in path[0]]
 
         chemin_complet = original_path
         all_paths.append(chemin_complet)
-
-        #print(f"Chemin complet pour cluster {cluster_id} : {chemin_complet}")
 
 
     return all_paths
@@ -438,7 +397,6 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
     clusters, cluster_weights, barycenters, nearest_nodes = generate_clusters(
         graph, nodes_position, num_agents, tolerance=0.25
     )
-    #print("les clusters :", clusters)
     all_paths = []
     for cluster_id in range(num_agents):
         
@@ -447,19 +405,13 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
         chemin_agent_vers_zero = nx.shortest_path(graph, source=nearest_node_to_zero, target= 0, weight="weight")
 
         nodes_in_cluster, edges_in_cluster = extract_cluster_nodes_and_edges(graph, nodes_position, clusters, cluster_id)
-        #print("les noeuds clusters :", clusters)
         nodes_in_cluster_id= extract_nodes(clusters, cluster_id)
-        #print("les noeuds clusters :", nodes_in_cluster_id)
         original_to_reduced, reduced_to_original = create_node_mappings(nodes_in_cluster_id)
 
         start_local= get_local_node_id(nearest_node_to_zero, original_to_reduced)
 
-        #print("nodes_in_cluster :", nodes_in_cluster)
-        #print("original_to_reduced :", original_to_reduced)
-        #print("reduced_to_original :", reduced_to_original)
 
         rearranged_edges = rearrange_edges_by_mapping(edges_in_cluster, original_to_reduced)
-        #print("edges_in_cluster :", rearranged_edges)
         subgraph = build_weighted_subgraph(nodes_in_cluster, rearranged_edges)
 
         distance_matrix_cluster = compute_weighted_distance_matrix(subgraph)
@@ -471,21 +423,12 @@ def generate_path_cluster_monobase(num_agents, nodes_position, edges, loop_numbe
             is_valid = validate_path(subgraph, path[i])
             if not is_valid:
                 path[i] = correct_path(subgraph, path[i])
-        #print(f"Chemin trouvé : {path}")
         original_path = [reduced_to_original[reduced_index] for reduced_index in path[0]]
         
         repeated_paths = original_path * loop_number
-        #for _ in range(loop_number):
-        #        repeated_paths.append(original_path)
-        #repeated_paths = [reduced_to_original[reduced_index] for reduced_index in path[0]]
 
-        # Étape 5 : Combiner le chemin initial avec le chemin ACO
-        #chemin_complet = chemin_agent_vers_cluster + original_path
 
         chemin_complet = chemin_agent_vers_cluster + repeated_paths + chemin_agent_vers_zero
         all_paths.append(chemin_complet)
-
-        #print(f"Chemin complet pour cluster {cluster_id} : {chemin_complet}")
-
 
     return all_paths

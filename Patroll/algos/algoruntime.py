@@ -30,7 +30,6 @@ def shortest_path(graph, start, end):
 
 def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agents, position_queue, last_visited_shared, shared_list_next_node, lock,agent_positions,shared_list_chemins,node_locked,stop_simulation):
     
-    # Informations récupérées depuis graphstructure
     adjacency_list = {i: [] for i in range(len(nodes_position))}
     for a, b in edges:
         adjacency_list[a].append(b)
@@ -119,8 +118,6 @@ def agent_process_runtime(agent_id,agent_speed, nodes_position, edges, num_agent
                                     print(f"Agent {agent_id} transfère le chemin à l'agent {closest_agent_id}")
                                     transferttt = shortest_path(adjacency_list, shared_list_next_node[closest_agent_id], max_idleness_node)
                                     shared_list_chemins[closest_agent_id] = transferttt
-                            else:
-                                print("jsuis deja occupé")
                         else:
                             # Calculer le chemin le plus court vers ce nœud
                             monchemin = shortest_path(adjacency_list, agent_node_index, max_idleness_node)
